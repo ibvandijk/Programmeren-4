@@ -112,34 +112,44 @@ const userController = {
   
   // UC-206 Verwijderen van user
   deleteUser: (req, res) => {
-    // Delete user from userId
-    logger.info('Delete user');
+    logger.trace('Delete user profile', req.userId);
 
-    // the userId is passed in the url
-    const userId = parseInt(req.params.userId);
-    logger.debug('userId = ', userId);
+    let sqlStatement = 'SELECT * FROM `user` WHERE id=?';
 
-    //delete entry 
-    try {
-      for (let index = 0; index < database['users'].length; index++) {
-        if (database['users'][index].id === userId) {
-          delete database['users'][index];
-          res.status(200).json({
-            status: 200,
-            message: `User met id ${userId} is verwijdert`,
-            data: {}
-          });
-        }
+    pool.getConnection(function (err, conn) {
+      // Do something with the connection
+      if (err) {
+        logger.error(err.code, err.syscall, err.address, err.port);
+        next({
+          code: 500,
+          message: err.code
+        });
       }
-      assert('userId not found');
-    } catch (err) {
-      logger.warn(err.message.toString());
-      res.status(400).json({
-        status: 400,
-        message: err.message.toString(),
-        data: {}
-      });
-    }
+      if (conn) {
+        conn.query(sqlStatement, [req.userId], (err, results, fields) => {
+          if (err) {
+            logger.error(err.message);
+            next({
+              code: 409,
+              message: err.message
+            });
+          }
+          if (results) {
+            logger.trace('Found', results.length, 'results');
+
+            let sqlStatement = 'DELETE FROM `user` WHERE id=?;';
+            conn.query(sqlStatement, [req.userId], (err, results, fields))
+
+            res.status(200).json({
+              code: 200,
+              message: 'User deleted',
+              data: 0
+            });
+          }
+        });
+        pool.releaseConnection(conn);
+      }
+    });
   },
 
   updateUser: (req, res) => {
@@ -150,6 +160,8 @@ const userController = {
     const userId = parseInt(req.params.userId);
     logger.debug('userId = ', userId);
   }
+
+  
 }
 
 module.exports = userController;
