@@ -46,12 +46,38 @@ const userController = {
   // UC-202 Opvragen van overzicht van users
   getAllUsers: (req, res, next) => {
     logger.info('Get all users');
-    // er moet precies 1 response verstuurd worden.
-    const statusCode = 200;
-    res.status(statusCode).json({
-      status: statusCode,
-      message: 'User getAll endpoint',
-      data: database.users
+
+    let sqlStatement = 'SELECT * FROM `user`';
+
+    pool.getConnection(function (err, conn) {
+      // Do something with the connection
+      if (err) {
+        logger.error(err.code, err.syscall, err.address, err.port);
+        next({
+          code: 500,
+          message: err.code
+        });
+      }
+      if (conn) {
+        conn.query(sqlStatement, [req.userId], (err, results, fields) => {
+          if (err) {
+            logger.error(err.message);
+            next({
+              code: 409,
+              message: err.message
+            });
+          }
+          if (results) {
+            logger.trace('Found', results.length, 'results');
+            res.status(200).json({
+              code: 200,
+              message: 'show all users',
+              data: results
+            });
+          }
+        });
+        pool.releaseConnection(conn);
+      }
     });
   },
 
