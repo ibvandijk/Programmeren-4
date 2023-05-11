@@ -2,7 +2,7 @@ process.env['DB_DATABASE'] = process.env.DB_DATABASE || 'shareameal-testdb';
 
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const server = require('../../index');
+const server = require('../../app');
 const assert = require('assert');
 const dbconnection = require('../../src/util/mysql-db');
 const jwt = require('jsonwebtoken');
