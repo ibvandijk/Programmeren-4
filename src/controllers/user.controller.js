@@ -114,7 +114,7 @@ const userController = {
   deleteUser: (req, res) => {
     logger.trace('Delete user profile', req.userId);
 
-    let sqlStatement = 'SELECT * FROM `user` WHERE id=?';
+    let sqlStatement = 'DELETE FROM `user` WHERE id=?';
 
     pool.getConnection(function (err, conn) {
       // Do something with the connection
@@ -136,30 +136,11 @@ const userController = {
           }
           if (results) {
             logger.trace('Found', results.length, 'results');
-
-            let sqlStatement = 'DELETE FROM `user` WHERE id=?;';
-            conn.query(sqlStatement, [req.userId], (err, results, fields) => {
-              if (err) {
-                next({
-                code: 409,
-                message: err.message
-                });
-              }
-              if (results) {
-                res.status(400).json({
-                  code: 400,
-                  message: 'No user found with that id',
-                  data: results[0]
-                });
-              }
-              else{
-                res.status(200).json({
-                  code: 200,
-                  message: 'User deleted',
-                  data: 0
-                });
-              }
-            }); 
+            res.status(200).json({
+              code: 200,
+              message: 'deleted user',
+              data: results[0]
+            });
           }
         });
         pool.releaseConnection(conn);
