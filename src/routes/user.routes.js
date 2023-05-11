@@ -12,7 +12,7 @@ router.get('/', userController.getAllUsers);
 router.get('/profile', userController.getUserProfile);
 
 // UC-204 Opvragen van usergegevens bij ID
-router.get('/', userController.getUserProfileById)
+router.get('/:userId', userController.getUserProfileById)
 
 // UC-205 Wijzigen van usergegevens
 

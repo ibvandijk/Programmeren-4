@@ -121,19 +121,40 @@ const userController = {
   },
 
   getUserProfileById: (req, res) => {
-    
-    const userId = parseInt(req.params.id); // Parse the ID from the URL params
+    logger.trace('Show user with user id', req.params.userId);
 
-    // Find the user with the given ID in the userList
-    const user = userList.find(user => user.id === userId);
+    let sqlStatement = 'SELECT * FROM `user` WHERE id=?';
 
-  // If user is not found, return 404 Not Found
-  if (!user) {
-  return res.status(404).json({ message: 'User not found' });
-  }
-
-  // Return the user data as JSON
-  res.json(user);
+    pool.getConnection(function (err, conn) {
+      // Do something with the connection
+      if (err) {
+        logger.error(err.code, err.syscall, err.address, err.port);
+        next({
+          code: 500,
+          message: err.code
+        });
+      }
+      if (conn) {
+        conn.query(sqlStatement, [req.params.userId], (err, results, fields) => {
+          if (err) {
+            logger.error(err.message);
+            next({
+              code: 409,
+              message: err.message
+            });
+          }
+          if (results) {
+            logger.trace('Found', results.length, 'results');
+            res.status(200).json({
+              code: 200,
+              message: 'Get User profile',
+              data: results[0]
+            });
+          }
+        });
+        pool.releaseConnection(conn);
+      }
+    });
   },
   
   // UC-206 Verwijderen van user
@@ -160,7 +181,7 @@ const userController = {
               message: err.message
             });
           }
-          if (true) {
+          if (results) {
             logger.trace('Found', results.length, 'results');
             res.status(200).json({
               code: 200,
