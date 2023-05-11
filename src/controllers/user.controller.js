@@ -138,8 +138,21 @@ const userController = {
             logger.trace('Found', results.length, 'results');
 
             let sqlStatement = 'DELETE FROM `user` WHERE id=?;';
-            conn.query(sqlStatement, [req.userId], (err, results, fields))
-
+            conn.query(sqlStatement, [req.userId], (err, results, fields) => {
+              if (err) {
+                next({
+                code: 409,
+                message: err.message
+                });
+              }
+              if (results.length = 0) {
+                res.status(400).json({
+                  code: 400,
+                  message: 'No user found with that id',
+                  data: results[0]
+                });
+              }
+            }); 
             res.status(200).json({
               code: 200,
               message: 'User deleted',
