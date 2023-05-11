@@ -160,7 +160,7 @@ const userController = {
               message: err.message
             });
           }
-          if (results.length > 0) {
+          if (true) {
             logger.trace('Found', results.length, 'results');
             res.status(200).json({
               code: 200,
