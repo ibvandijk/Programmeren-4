@@ -134,11 +134,19 @@ const userController = {
               message: err.message
             });
           }
-          if (results) {
+          if (results.length > 0) {
             logger.trace('Found', results.length, 'results');
             res.status(200).json({
               code: 200,
               message: 'deleted user',
+              data: results[0]
+            });
+          }
+          else {
+            logger.warn('no user found')
+            res.status(400).json({
+              code: 400,
+              message: 'No user found',
               data: results[0]
             });
           }
