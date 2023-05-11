@@ -138,7 +138,7 @@ const userController = {
   
   // UC-206 Verwijderen van user
   deleteUser: (req, res) => {
-    logger.trace('Delete user profile', req.userId);
+    logger.trace('Delete user profile', req.params.userId);
 
     let sqlStatement = 'DELETE FROM `user` WHERE id=?';
 
@@ -152,7 +152,7 @@ const userController = {
         });
       }
       if (conn) {
-        conn.query(sqlStatement, [req.userId], (err, results, fields) => {
+        conn.query(sqlStatement, [req.params.userId], (err, results, fields) => {
           if (err) {
             logger.error(err.message);
             next({
