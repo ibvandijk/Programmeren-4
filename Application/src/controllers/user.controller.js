@@ -8,39 +8,45 @@ const userController = {
 
   // UC-201 Registreren als nieuwe user
   createUser: (req, res) => {
-
-    logger.info('Register user');
-    const user = req.body;
-    logger.debug('user = ', user);
-
-    try {
-      assert(typeof user.firstName === 'string', 'firstName must be a string');
-      assert(typeof user.emailAdress === 'string', 'emailAddress must be a string');
-    } catch (err) {
-      logger.warn(err.message.toString());
-      // if one of the asserts fail, send error response
-      res.status(400).json({
-        status: 400,
-        message: err.message.toString(),
-        data: {}
-      });
-      return;
-    }
-
-    // assign user id, and increment for next insert
-    user.id = database.index++;
-
-    // add user to db
-    database['users'].push(user);
-    logger.info('New user added to database');
-
-    // send succesfull response
-    res.status(200).json({
-      status: 200,
-      message: `User met id ${user.id} is toegevoegd`,
-      data: user
+		let user = req.body;
+		// Establish a database connection
+    dbconnection.getConnection(function (err, connection) {
+	    if (err) throw err;
+      // Insert user data into the 'user' table
+      connection.query(
+        'INSERT INTO user (firstName, lastName, street, city, phoneNumber, emailAdress, password) VALUES (?, ?, ?, ?, ?, ?, ?);',
+        [user.firstName, user.lastName, user.street, user.city, user.phoneNumber, user.emailAdress, user.password, ],
+        function (err, result, fields) {
+          if (err) {
+            // If there is an error, release the connection and send a 409 status with an error message
+            connection.release();
+            res.status(409).json({
+              status: 409,
+              message: `The email address: ${user.emailAdress} has already been taken!`,
+            });
+          } else {
+            // If the user is successfully inserted, retrieve the inserted user from the database
+            connection.query(
+              'SELECT * FROM user WHERE emailAdress = ?',
+              [user.emailAdress],
+              function (error, results, fields) {
+                connection.release();
+                user = results[0];
+                // Set isActive property to true if it's true, otherwise set it to false (ensures that user.isActive is always a boolean value)
+                user.isActive = (user.isActive) ? true : false;
+                // Send a 201 status with the inserted user as a response
+                res.status(201).json({
+                  status: 201,
+                  result: user,
+                });
+              }
+            );
+          }
+          // End of the database connection callback
+        }
+      );
     });
-  },
+	},
 
 
   // UC-202 Opvragen van overzicht van users
