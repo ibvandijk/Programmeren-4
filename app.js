@@ -17,7 +17,8 @@ app.use('/api/user', userRoutes);
 
 
 // UC-101 inloggen
-app.post('/api/login', userRoutes.login);
+const userController = require('./src/controllers/user.controller.js');
+app.post('/api/login', userController.loginUser);
 
 
 // UC-102 Opvragen van systeeminformatie
