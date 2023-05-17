@@ -8,6 +8,8 @@ const userController = {
 
   // UC-101 login function => '/api/login' 
   loginUser: (req, res) => {
+    logger.trace('Login user ', req.params.userId);
+    
     const { email, password } = req.body;
 
     try {
