@@ -9,9 +9,11 @@ const userController = {
   // UC-201 Registreren als nieuwe user
   createUser: (req, res) => {
 		let user = req.body;
+
 		// Establish a database connection
     dbconnection.getConnection(function (err, connection) {
 	    if (err) throw err;
+
       // Insert user data into the 'user' table
       connection.query(
         'INSERT INTO user (firstName, lastName, street, city, phoneNumber, emailAdress, password) VALUES (?, ?, ?, ?, ?, ?, ?);',
@@ -32,8 +34,10 @@ const userController = {
               function (error, results, fields) {
                 connection.release();
                 user = results[0];
+
                 // Set isActive property to true if it's true, otherwise set it to false (ensures that user.isActive is always a boolean value)
                 user.isActive = (user.isActive) ? true : false;
+
                 // Send a 201 status with the inserted user as a response
                 res.status(201).json({
                   status: 201,
@@ -48,6 +52,57 @@ const userController = {
     });
 	},
 
+  // UC-202 Opvragen van overzicht van users
+  getUserList: (req, res) => {
+    const queryParams = req.query;
+  
+    let dbQuery = 'SELECT * FROM user';
+  
+    const validFields = ['firstName', 'lastName', 'street', 'city', 'phoneNumber', 'emailAddress', 'password'];
+    const queryConditions = [];
+  
+    // Build the query conditions based on the provided query parameters
+    for (const [field, value] of Object.entries(queryParams)) {
+      if (validFields.includes(field)) {
+        if (Array.isArray(value)) {
+          // Handle multiple values for a single field
+          const fieldConditions = value.map(val => `${field} LIKE '%${val}%'`);
+          queryConditions.push(`(${fieldConditions.join(' OR ')})`);
+        } else {
+          // Handle single value for a field
+          queryConditions.push(`${field} LIKE '%${value}%'`);
+        }
+      }
+    }
+  
+    // Add the WHERE clause to the query if there are any conditions
+    if (queryConditions.length > 0) {
+      dbQuery += ' WHERE ' + queryConditions.join(' AND ');
+    }
+  
+    dbconnection.getConnection(function (err, connection) {
+      if (err) throw err;
+      connection.query(dbQuery, function (error, results, fields) {
+        connection.release();
+        if (error) throw error;
+  
+        // Convert isActive property to boolean
+        const userList = results.map(user => {
+          return {
+            ...user,
+            isActive: !!user.isActive,
+          };
+        });
+  
+        res.status(200).json({
+          status: 200,
+          users: userList,
+        });
+      });
+    });
+  },
+  
+  
 
   // UC-202 Opvragen van overzicht van users
   getAllUsers: (req, res, next) => {
