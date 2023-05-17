@@ -6,19 +6,27 @@ const jwt = require('jsonwebtoken');
 
 const userController = {
 
-  // UC-101 login function => '/api/login'
-  loginUser: (req, res) => {
-    const { emailAdress, password } = req.body;
+// UC-101 login function => '/api/login'
+loginUser: (req, res) => {
+  const { emailAdress, password } = req.body;
 
-    // Check if emailAdress or password is undefined
-    if (!emailAdress || !password) {
-      return res.status(400).json({ message: 'emailAdress and password are required' });
+  // Check if emailAdress or password is undefined
+  if (!emailAdress || !password) {
+    return res.status(400).json({ message: 'emailAdress and password are required' });
+  }
+
+  pool.getConnection((err, conn) => {
+    if (err) {
+      console.error('Error establishing database connection:', err);
+      return res.status(500).json({ message: 'Internal server error' });
     }
 
     try {
       // Execute the SQL query to find the user by email and password
       const sqlQuery = 'SELECT * FROM user WHERE emailAdress = ? AND password = ?';
-      dbconnection.query(sqlQuery, [emailAdress, password], (error, results) => {
+      conn.query(sqlQuery, [emailAdress, password], (error, results) => {
+        conn.release(); // Release the connection after the query
+
         if (error) {
           console.error('Error executing SQL query:', error);
           return res.status(500).json({ message: 'Internal server error' });
@@ -41,7 +49,9 @@ const userController = {
       console.error('Error during login:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
-  },
+  });
+},
+
 
 
 
