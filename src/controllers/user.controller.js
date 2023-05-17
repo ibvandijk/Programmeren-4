@@ -6,16 +6,19 @@ const jwt = require('jsonwebtoken');
 
 const userController = {
 
-  // UC-101 login function => '/api/login' 
+  // UC-101 login function => '/api/login'
   loginUser: (req, res) => {
-    logger.trace('Login user ', req.body);
-    
-    const { email, password } = req.body;
+    const { emailAdress, password } = req.body;
+
+    // Check if emailAdress or password is undefined
+    if (!emailAdress || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
 
     try {
       // Execute the SQL query to find the user by email and password
       const sqlQuery = 'SELECT * FROM user WHERE email = ? AND password = ?';
-      dbconnection.query(sqlQuery, [email, password], (error, results) => {
+      dbconnection.query(sqlQuery, [emailAdress, password], (error, results) => {
         if (error) {
           console.error('Error executing SQL query:', error);
           return res.status(500).json({ message: 'Internal server error' });
@@ -39,6 +42,7 @@ const userController = {
       res.status(500).json({ message: 'Internal server error' });
     }
   },
+
 
 
   // UC-201 Registreren als nieuwe user
