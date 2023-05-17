@@ -14,14 +14,7 @@ app.all('*', (req, res, next) => {
 
 // References to the routes;
 const userRoutes = require('./src/routes/user.routes');
-app.use('/api/user', userRoutes);
-
-// UC-101 inloggen
-const userController = require('./src/controllers/user.controller.js');
-app.post('/api/login', (req, res) => {
-  userController.loginUser(req.body);
-});
-
+app.use(userRoutes);
 
 // UC-102 Opvragen van systeeminformatie
 app.get('/api/info', (req, res) => {
