@@ -15,6 +15,11 @@ app.use('*', (req, res, next) => {
 const userRoutes = require('./src/routes/user.routes');
 app.use('/api/user', userRoutes);
 
+
+// UC-101 inloggen
+app.post('/api/login', userRoutes.login);
+
+
 // UC-102 Opvragen van systeeminformatie
 app.get('/api/info', (req, res) => {
   logger.info('Get server information');
