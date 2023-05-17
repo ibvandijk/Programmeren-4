@@ -144,42 +144,53 @@ const userController = {
 
   // UC-203 Opvragen van gebruikersprofiel
   getUserProfile: (req, res, next) => {
-    req.userId = 1;
-    logger.trace('Get user profile for user', req.userId);
+    const userId = 1; // Assuming the user ID is obtained from somewhere
 
-    let sqlStatement = 'SELECT * FROM `user` WHERE id=?';
+    logger.trace('Get user profile for user', userId);
 
-    pool.getConnection(function (err, conn) {
-      // Do something with the connection
+    const sqlStatement = 'SELECT * FROM `user` WHERE id=?';
+
+    pool.getConnection((err, conn) => {
       if (err) {
+        // Handle connection error
         logger.error(err.code, err.syscall, err.address, err.port);
-        next({
+        return next({
           code: 500,
           message: err.code
         });
       }
-      if (conn) {
-        conn.query(sqlStatement, [req.userId], (err, results, fields) => {
-          if (err) {
-            logger.error(err.message);
-            next({
-              code: 409,
-              message: err.message
-            });
-          }
-          if (results) {
-            logger.trace('Found', results.length, 'results');
-            res.status(200).json({
-              code: 200,
-              message: 'Get User profile',
-              data: results[0]
-            });
-          }
-        });
-        pool.releaseConnection(conn);
-      }
+
+      conn.query(sqlStatement, [userId], (err, results, fields) => {
+        conn.release(); // Release the connection after the query
+
+        if (err) {
+          // Handle query error
+          logger.error(err.message);
+          return next({
+            code: 409,
+            message: err.message
+          });
+        }
+
+        if (results.length > 0) {
+          // User profile found
+          logger.trace('Found', results.length, 'results');
+          res.status(200).json({
+            code: 200,
+            message: 'Get User profile',
+            data: results[0]
+          });
+        } else {
+          // User profile not found
+          res.status(404).json({
+            code: 404,
+            message: 'User profile not found'
+          });
+        }
+      });
     });
   },
+
 
   getUserProfileById: (req, res) => {
     logger.trace('Show user with user id', req.params.userId);
