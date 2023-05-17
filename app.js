@@ -4,6 +4,9 @@ const logger = require('./src/util/utils').logger;
 const app = express();
 const port = process.env.PORT || 3000;
 
+const bodyParser = require('body-parser');
+app.use(bodyParser.json());
+
 
 //Log all requests
 app.all('*', (req, res, next) => {
