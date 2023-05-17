@@ -12,12 +12,12 @@ const userController = {
 
     // Check if emailAdress or password is undefined
     if (!emailAdress || !password) {
-      return res.status(400).json({ message: 'Email and password are required' });
+      return res.status(400).json({ message: 'emailAdress and password are required' });
     }
 
     try {
       // Execute the SQL query to find the user by email and password
-      const sqlQuery = 'SELECT * FROM user WHERE email = ? AND password = ?';
+      const sqlQuery = 'SELECT * FROM user WHERE emailAdress = ? AND password = ?';
       dbconnection.query(sqlQuery, [emailAdress, password], (error, results) => {
         if (error) {
           console.error('Error executing SQL query:', error);
