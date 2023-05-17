@@ -11,7 +11,7 @@ const userController = {
 		let user = req.body;
 
 		// Establish a database connection
-    dbconnection.getConnection(function (err, connection) {
+    pool.getConnection(function (err, connection) {
 	    if (err) throw err;
 
       // Insert user data into the 'user' table
@@ -58,7 +58,7 @@ const userController = {
   
     let dbQuery = 'SELECT * FROM user';
   
-    const validFields = ['firstName', 'lastName', 'street', 'city', 'phoneNumber', 'emailAddress', 'password'];
+    const validFields = ['firstName', 'lastName', 'street', 'city', 'phoneNumber', 'emailAddress', 'password', 'isActive'];
     const queryConditions = [];
   
     // Build the query conditions based on the provided query parameters
@@ -80,7 +80,7 @@ const userController = {
       dbQuery += ' WHERE ' + queryConditions.join(' AND ');
     }
   
-    dbconnection.getConnection(function (err, connection) {
+    pool.getConnection(function (err, connection) {
       if (err) throw err;
       connection.query(dbQuery, function (error, results, fields) {
         connection.release();
@@ -144,42 +144,53 @@ const userController = {
 
   // UC-203 Opvragen van gebruikersprofiel
   getUserProfile: (req, res, next) => {
-    req.userId = 1;
-    logger.trace('Get user profile for user', req.userId);
+    const userId = 1; // Assuming the user ID is obtained from somewhere
 
-    let sqlStatement = 'SELECT * FROM `user` WHERE id=?';
+    logger.trace('Get user profile for user', userId);
 
-    pool.getConnection(function (err, conn) {
-      // Do something with the connection
+    const sqlStatement = 'SELECT * FROM `user` WHERE id=?';
+
+    pool.getConnection((err, conn) => {
       if (err) {
+        // Handle connection error
         logger.error(err.code, err.syscall, err.address, err.port);
-        next({
+        return next({
           code: 500,
           message: err.code
         });
       }
-      if (conn) {
-        conn.query(sqlStatement, [req.userId], (err, results, fields) => {
-          if (err) {
-            logger.error(err.message);
-            next({
-              code: 409,
-              message: err.message
-            });
-          }
-          if (results) {
-            logger.trace('Found', results.length, 'results');
-            res.status(200).json({
-              code: 200,
-              message: 'Get User profile',
-              data: results[0]
-            });
-          }
-        });
-        pool.releaseConnection(conn);
-      }
+
+      conn.query(sqlStatement, [userId], (err, results, fields) => {
+        conn.release(); // Release the connection after the query
+
+        if (err) {
+          // Handle query error
+          logger.error(err.message);
+          return next({
+            code: 409,
+            message: err.message
+          });
+        }
+
+        if (results.length > 0) {
+          // User profile found
+          logger.trace('Found', results.length, 'results');
+          res.status(200).json({
+            code: 200,
+            message: 'Get User profile',
+            data: results[0]
+          });
+        } else {
+          // User profile not found
+          res.status(404).json({
+            code: 404,
+            message: 'User profile not found'
+          });
+        }
+      });
     });
   },
+
 
   getUserProfileById: (req, res) => {
     logger.trace('Show user with user id', req.params.userId);
@@ -264,14 +275,56 @@ const userController = {
     });
   },
 
-  updateUser: (req, res) => {
-    // Update user from userId
-    logger.info('Update user')
+  // UC-205 Wijzigen van usergegevens
+  updateUser: (req, res, next) => {
 
-    // userId is passed trough the url
-    const userId = parseInt(req.params.userId);
-    logger.debug('userId = ', userId);
-  }
+    const userId = req.params.id; // user ID is obtained from the request params
+    const userData = req.body; // the updated user data is provided in the request body
+
+    logger.trace('Update user with ID:', userId);
+
+    const sqlStatement = 'UPDATE `user` SET ? WHERE id = ?';
+
+    pool.getConnection((err, conn) => {
+      if (err) {
+        // Handle connection error
+        logger.error(err.code, err.syscall, err.address, err.port);
+        return next({
+          code: 500,
+          message: err.code
+        });
+      }
+
+      conn.query(sqlStatement, [userData, userId], (err, results, fields) => {
+        conn.release(); // Release the connection after the query
+
+        if (err) {
+          // Handle query error
+          logger.error(err.message);
+          return next({
+            code: 409,
+            message: err.message
+          });
+        }
+
+        if (results.affectedRows > 0) {
+          // User updated successfully
+          logger.trace('User updated with ID:', userId);
+          res.status(200).json({
+            code: 200,
+            message: 'User updated successfully'
+          });
+        } else {
+          // User not found or no changes made
+          res.status(404).json({
+            code: 404,
+            message: 'User not found or no changes made'
+          });
+        }
+      });
+    });
+  },
+
 
   
 }
