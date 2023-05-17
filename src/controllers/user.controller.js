@@ -6,6 +6,39 @@ const jwt = require('jsonwebtoken');
 
 const userController = {
 
+  // POST /api/login
+  loginUser: (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+      // Execute the SQL query to find the user by email and password
+      const sqlQuery = 'SELECT * FROM user WHERE email = ? AND password = ?';
+      dbconnection.query(sqlQuery, [email, password], (error, results) => {
+        if (error) {
+          console.error('Error executing SQL query:', error);
+          return res.status(500).json({ message: 'Internal server error' });
+        }
+
+        // Check if the user exists
+        if (results.length === 0) {
+          return res.status(401).json({ message: 'Invalid email or password' });
+        }
+
+        const user = results[0];
+
+        // Generate a JWT token
+        const token = jwt.sign({ userId: user.id }, 'your-secret-key', { expiresIn: '1h' });
+
+        // Return the token to the client
+        res.status(200).json({ token });
+      });
+    } catch (error) {
+      console.error('Error during login:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  },
+
+
   // UC-201 Registreren als nieuwe user
   createUser: (req, res) => {
 		let user = req.body;
@@ -101,97 +134,56 @@ const userController = {
       });
     });
   },
-  
-  
-
-  // UC-202 Opvragen van overzicht van users
-  getAllUsers: (req, res, next) => {
-    logger.info('Get all users');
-
-    let sqlStatement = 'SELECT * FROM `user`';
-
-    pool.getConnection(function (err, conn) {
-      // Do something with the connection
-      if (err) {
-        logger.error(err.code, err.syscall, err.address, err.port);
-        next({
-          code: 500,
-          message: err.code
-        });
-      }
-      if (conn) {
-        conn.query(sqlStatement, [req.userId], (err, results, fields) => {
-          if (err) {
-            logger.error(err.message);
-            next({
-              code: 409,
-              message: err.message
-            });
-          }
-          if (results) {
-            logger.trace('Found', results.length, 'results');
-            res.status(200).json({
-              code: 200,
-              message: 'show all users',
-              data: results
-            });
-          }
-        });
-        pool.releaseConnection(conn);
-      }
-    });
-  },
 
   // UC-203 Opvragen van gebruikersprofiel
   getUserProfile: (req, res, next) => {
-    const userId = 1; // Assuming the user ID is obtained from somewhere
-
-    logger.trace('Get user profile for user', userId);
-
-    const sqlStatement = 'SELECT * FROM `user` WHERE id=?';
-
-    pool.getConnection((err, conn) => {
-      if (err) {
-        // Handle connection error
-        logger.error(err.code, err.syscall, err.address, err.port);
-        return next({
-          code: 500,
-          message: err.code
-        });
+    const token = req.headers.authorization; // the token is sent in the request headers as "Authorization"
+  
+    // Verify and decode the JWT token
+    jwt.verify(token, 'your-secret-key', (error, decodedToken) => {
+      if (error) {
+        // Token verification failed
+        return res.status(401).json({ message: 'Invalid token' });
       }
-
-      conn.query(sqlStatement, [userId], (err, results, fields) => {
-        conn.release(); // Release the connection after the query
-
+  
+      const userId = decodedToken.userId; // Extract the user ID from the decoded token
+  
+      // Retrieve the user profile from the database
+      const sqlStatement = 'SELECT * FROM `user` WHERE id=?';
+  
+      dbconnection.getConnection((err, connection) => {
         if (err) {
-          // Handle query error
-          logger.error(err.message);
-          return next({
-            code: 409,
-            message: err.message
-          });
+          console.error('Error getting database connection:', err);
+          return res.status(500).json({ message: 'Database connection error' });
         }
-
-        if (results.length > 0) {
-          // User profile found
-          logger.trace('Found', results.length, 'results');
-          res.status(200).json({
-            code: 200,
-            message: 'Get User profile',
-            data: results[0]
-          });
-        } else {
-          // User profile not found
-          res.status(404).json({
-            code: 404,
-            message: 'User profile not found'
-          });
-        }
+  
+        connection.query(sqlStatement, [userId], (error, results, fields) => {
+          connection.release(); // Release the connection after the query
+  
+          if (error) {
+            console.error('Error executing SQL query:', error);
+            return res.status(500).json({ message: 'Internal server error' });
+          }
+  
+          if (results.length > 0) {
+            // User profile found
+            res.status(200).json({
+              code: 200,
+              message: 'Get User profile',
+              data: results[0]
+            });
+          } else {
+            // User profile not found
+            res.status(404).json({
+              code: 404,
+              message: 'User profile not found'
+            });
+          }
+        });
       });
     });
   },
-
-
+  
   getUserProfileById: (req, res) => {
     logger.trace('Show user with user id', req.params.userId);
 
