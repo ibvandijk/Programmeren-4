@@ -80,7 +80,7 @@ const userController = {
       dbQuery += ' WHERE ' + queryConditions.join(' AND ');
     }
   
-    dbconnection.getConnection(function (err, connection) {
+    pool.getConnection(function (err, connection) {
       if (err) throw err;
       connection.query(dbQuery, function (error, results, fields) {
         connection.release();
