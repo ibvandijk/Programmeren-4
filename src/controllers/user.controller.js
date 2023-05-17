@@ -11,7 +11,7 @@ const userController = {
 		let user = req.body;
 
 		// Establish a database connection
-    dbconnection.getConnection(function (err, connection) {
+    pool.getConnection(function (err, connection) {
 	    if (err) throw err;
 
       // Insert user data into the 'user' table
@@ -58,7 +58,7 @@ const userController = {
   
     let dbQuery = 'SELECT * FROM user';
   
-    const validFields = ['firstName', 'lastName', 'street', 'city', 'phoneNumber', 'emailAddress', 'password'];
+    const validFields = ['firstName', 'lastName', 'street', 'city', 'phoneNumber', 'emailAddress', 'password', 'isActive'];
     const queryConditions = [];
   
     // Build the query conditions based on the provided query parameters
