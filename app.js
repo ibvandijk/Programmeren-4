@@ -19,7 +19,7 @@ app.use('/api/user', userRoutes);
 // UC-101 inloggen
 const userController = require('./src/controllers/user.controller.js');
 app.post('/api/login', (req, res) => {
-  userController.login(req.body);
+  userController.loginUser(req.body);
 });
 
 
