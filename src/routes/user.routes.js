@@ -6,7 +6,7 @@ const userController = require('../controllers/user.controller');
 router.post('/', userController.createUser);
 
 // UC-202 Opvragen van overzicht van users
-router.get('/', userController.getUserList);
+router.get('/', userController.getAllUsers);
 
 // UC-203 Opvragen van gebruikersprofiel
 router.get('/profile', userController.getUserProfile);
