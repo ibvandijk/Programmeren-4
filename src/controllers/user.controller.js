@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 
 const userController = {
 
-  // POST /api/login
+  // UC-101 login function => '/api/login' 
   loginUser: (req, res) => {
     const { email, password } = req.body;
 
