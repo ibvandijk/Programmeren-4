@@ -5,15 +5,23 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 
-app.use('*', (req, res, next) => {
-  const method = req.method;
-  logger.trace(`Methode ${method} is aangeroepen`);
-  next();
+//Log all requests
+app.all('*', (req, res, next) => {
+	const method = req.method;
+	logger.debug(`Method ${method} is aangeroepen`);
+	next();
 });
 
 // References to the routes;
 const userRoutes = require('./src/routes/user.routes');
 app.use('/api/user', userRoutes);
+
+// UC-101 inloggen
+const userController = require('./src/controllers/user.controller.js');
+app.post('/api/login', (req, res) => {
+  userController.login(req.body);
+});
+
 
 // UC-102 Opvragen van systeeminformatie
 app.get('/api/info', (req, res) => {
