@@ -159,7 +159,8 @@ loginUser: (req, res) => {
     jwt.verify(token, 'your-secret-key', (error, decodedToken) => {
       if (error) {
         // Token verification failed
-        return res.status(401).json({ message: 'Invalid token' });
+        
+        return res.status(401).json({ message: 'Invalid token', error});
       }
   
       const userId = decodedToken.userId; // Extract the user ID from the decoded token
