@@ -153,8 +153,8 @@ loginUser: (req, res) => {
 
   // UC-203 Opvragen van gebruikersprofiel
   getUserProfile: (req, res, next) => {
-    const token = req.headers.authorization; // the token is sent in the request headers as "Authorization"
-  
+    const token = req.headers.authorization.split(" ")[1]; // the token is sent in the request headers as "Authorization"
+
     // Verify and decode the JWT token
     jwt.verify(token, 'your-secret-key', (error, decodedToken) => {
       if (error) {
