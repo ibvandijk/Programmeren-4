@@ -4,6 +4,9 @@ const assert = require('assert');
 const pool = require('../util/mysql-db');
 const jwt = require('jsonwebtoken');
 
+const {key} = 'my-secret-key';
+
+
 const userController = {
 
 // UC-101 login function => '/api/login'
@@ -40,7 +43,7 @@ loginUser: (req, res) => {
         const user = results[0];
 
         // Generate a JWT token
-        const token = jwt.sign({ userId: user.id }, 'your-secret-key', { expiresIn: '1h' });
+        const token = jwt.sign({ userId: user.id }, key);
 
         // Return the token to the client
         res.status(200).json({ token });
@@ -153,14 +156,16 @@ loginUser: (req, res) => {
 
   // UC-203 Opvragen van gebruikersprofiel
   getUserProfile: (req, res, next) => {
-    const token = req.headers.authorization.split(" ")[1]; // the token is sent in the request headers as "Authorization"
+    const token = req.headers.authorization.split(' ')[1]; // the token is sent in the request headers as "Authorization"
 
     // Verify and decode the JWT token
-    jwt.verify(token, 'your-secret-key', (error, decodedToken) => {
+    jwt.verify(token, key, (error, decodedToken) => {
       if (error) {
         // Token verification failed
         
-        return res.status(401).json({ message: 'Invalid token', error});
+        return res.status(401).json({ 
+          message: 'Invalid token',
+          error});
       }
   
       const userId = decodedToken.userId; // Extract the user ID from the decoded token
