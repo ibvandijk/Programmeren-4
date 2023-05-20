@@ -17,7 +17,7 @@ app.all('*', (req, res, next) => {
 
 // References to the routes;
 const userRoutes = require('./src/routes/user.routes');
-const mealRoutes= require('.src/routes/meal.routes')
+const mealRoutes= require('./src/routes/meal.routes')
 app.use(userRoutes);
 app.use(mealRoutes);
 
