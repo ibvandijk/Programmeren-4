@@ -26,37 +26,38 @@ const mealController = {
         } = meal;
 
         try {
-            // Validate imageUrl field
-            assert(typeof imageUrl === 'string', 'ImageUrl must be a string');
-
             // Validate name field
-            assert(typeof name === 'string', 'Name must be a string');
+            assert(name !== null && typeof name === 'string', 'Name must be a non-null string');
+
+            // Validate imageUrl field
+            assert(imageUrl !== null && typeof imageUrl === 'string', 'ImageUrl must be a non-null string');
 
             // Validate description field
-            assert(typeof description === 'string', 'Description should be a string!');
+            assert(description !== null && typeof description === 'string', 'Description must be a non-null string');
 
             // Validate price field
-            assert(typeof price === 'number', 'Price must be a number');
+            assert(price !== null && typeof price === 'number', 'Price must be a non-null number');
 
             // Validate dateTime field
-            assert(typeof dateTime === 'string', 'DateTime must be a string');
+            assert(dateTime !== null && typeof dateTime === 'string', 'DateTime must be a non-null string');
 
             // Validate isToTakeHome field
-            assert(isToTakeHome != null, 'isToTakeHome cannot be null');
+            assert(isToTakeHome !== null, 'isToTakeHome cannot be null');
 
             // Validate isVega field
-            assert(isVega != null, 'isVega cannot be null');
+            assert(isVega !== null, 'isVega cannot be null');
 
             // Validate isVegan field
-            assert(isVegan != null, 'isVegan cannot be null');
+            assert(isVegan !== null, 'isVegan cannot be null');
 
             // Validate isActive field
-            assert(isActive != null, 'isActive cannot be null');
+            assert(isActive !== null, 'isActive cannot be null');
+
 
             next();
         } catch (err) {
             // If any validation fails, handle the error and pass it to the next middleware
-            const error = { status: 400, message: err.message };
+            const error = { status: 400, message: err.message, meal};
             next(error);
         }
     },
@@ -274,6 +275,8 @@ const mealController = {
 
     // UC-304 Opvragen van maaltijd bij ID
 	getMealById: (req, res, next) => {
+        logger.info('getMealById called');
+
         const mealId = req.params.mealId;
         const sqlStatement = 'SELECT * FROM meal WHERE id = ?';
       
@@ -325,6 +328,8 @@ const mealController = {
     },
 
     deleteMealById: (req, res, next) => {
+        logger.info('deleteMealById called');
+
         const mealId = req.params.mealId;
       
         pool.getConnection((err, conn) => {
