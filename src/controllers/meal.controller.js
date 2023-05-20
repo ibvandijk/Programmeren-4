@@ -343,55 +343,99 @@ const mealController = {
         });
     },
 
+    // UC-305 Verwijderen van maaltijd
     deleteMealById: (req, res, next) => {
         logger.info('deleteMealById called');
-
+    
         const mealId = req.params.mealId;
-      
+        const userId = req.userId;
+    
         pool.getConnection((err, conn) => {
             if (err) {
-            // Handle connection error
-            logger.error(err.code, err.syscall, err.address, err.port);
-            return next({
-                code: 500,
-                message: err.code
-            });
+                // Handle connection error
+                logger.error(err.code, err.syscall, err.address, err.port);
+                return next({
+                    code: 500,
+                    message: err.code
+                });
             }
-      
-          conn.query(
-                'DELETE FROM meal WHERE id = ?',
+    
+            conn.query(
+                'SELECT cookId FROM meal WHERE id = ?',
                 [mealId],
                 (error, results) => {
-                    conn.release();
-            
                     if (error) {
+                        conn.release();
                         // Handle query error
                         const error = {
-                        status: 500,
-                        message: 'Failed to delete meal.',
+                            status: 500,
+                            message: 'Failed to delete meal.',
                         };
                         next(error);
                         return;
                     }
-            
-                    if (results.affectedRows === 0) {
+    
+                    if (results.length === 0) {
                         // No meal found with the provided mealId
+                        conn.release();
                         const error = {
-                        status: 404,
-                        message: `Meal with ID ${mealId} not found.`,
+                            status: 404,
+                            message: `Meal with ID ${mealId} not found.`,
                         };
                         next(error);
                         return;
                     }
-            
-                    res.status(200).json({
-                        status: 200,
-                        message: `Meal with ID ${mealId} successfully deleted.`,
-                    });
+    
+                    const meal = results[0];
+                    if (meal.cookId !== userId) {
+                        // The meal does not belong to the user
+                        conn.release();
+                        const error = {
+                            status: 403,
+                            message: `You can only delete meals that you own.`,
+                        };
+                        next(error);
+                        return;
+                    }
+    
+                    conn.query(
+                        'DELETE FROM meal WHERE id = ?',
+                        [mealId],
+                        (deleteError, deleteResults) => {
+                            conn.release();
+    
+                            if (deleteError) {
+                                // Handle delete query error
+                                const error = {
+                                    status: 500,
+                                    message: 'Failed to delete meal.',
+                                };
+                                next(error);
+                                return;
+                            }
+    
+                            if (deleteResults.affectedRows === 0) {
+                                // No meal found with the provided mealId
+                                const error = {
+                                    status: 404,
+                                    message: `Meal with ID ${mealId} not found.`,
+                                };
+                                next(error);
+                                return;
+                            }
+    
+                            res.status(200).json({
+                                status: 200,
+                                result: {
+                                    message: `Meal with ID ${mealId} successfully deleted.`,
+                                },
+                            });
+                        }
+                    );
                 }
             );
         });
-    }, 
+    },
 }
 
 module.exports = mealController;
