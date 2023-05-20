@@ -418,7 +418,7 @@ const mealController = {
                                 // No meal found with the provided mealId
                                 conn.release();
                                 const notFoundError = new Error(`Meal with ID ${mealId} not found.`);
-                                notFoundError.code = 404;
+                                notFoundError.status = 404;
                                 return next(notFoundError);
                             }
     
