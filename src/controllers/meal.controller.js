@@ -320,11 +320,11 @@ const mealController = {
                 }
             
                 if (results.length < 1) {
-                    const error = {
+                    const err = {
                     code: 404,
                     message: `Meal with ID: ${mealId} not found!`
                     };
-                    return next(error);
+                    return next(err);
                 }
             
                 // Modify result properties to boolean values
