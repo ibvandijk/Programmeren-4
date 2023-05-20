@@ -27,39 +27,39 @@ const mealController = {
 
         try {
             // Validate name field
-            assert(name, 'Missing field: name');
+            assert(name !== null && name !== undefined, 'Missing field: name');
             assert(typeof name === 'string', 'name must be a string');
 
             // Validate imageUrl field
-            assert(imageUrl, 'Missing field: imageUrl');
+            assert(imageUrl !== null && imageUrl !== undefined, 'Missing field: imageUrl');
             assert(typeof imageUrl === 'string', 'imageUrl must be a string');
 
             // Validate description field
-            assert(description, 'Missing field: description');
+            assert(description !== null && description !== undefined, 'Missing field: description');
             assert(typeof description === 'string', 'description must be a string');
 
             // Validate price field
-            assert(price, 'Missing field: price');
+            assert(price !== null && price !== undefined, 'Missing field: price');
             assert(typeof price === 'number', 'price must be a number');
 
             // Validate dateTime field
-            assert(dateTime, 'Missing field: dateTime');
+            assert(dateTime !== null && dateTime !== undefined, 'Missing field: dateTime');
             assert(typeof dateTime === 'string', 'dateTime must be a string');
 
             // Validate isToTakeHome field
-            assert(isToTakeHome, 'Missing field: isToTakeHome');
+            assert(isToTakeHome !== null && isToTakeHome !== undefined, 'Missing field: isToTakeHome');
             assert(typeof isToTakeHome === 'boolean', 'isToTakeHome must be a boolean');
 
             // Validate isVega field
-            assert(isVega, 'Missing field: isVega');
+            assert(isVega !== null && isVega !== undefined, 'Missing field: isVega');
             assert(typeof isVega === 'boolean', 'isVega must be a boolean');
 
             // Validate isVegan field
-            assert(isVegan, 'Missing field: isVegan');
+            assert(isVegan !== null && isVegan !== undefined, 'Missing field: isVegan');
             assert(typeof isVegan === 'boolean', 'isVegan must be a boolean');
 
             // Validate isActive field
-            assert(isActive, 'Missing field: isActive');
+            assert(isActive !== null && isActive !== undefined, 'Missing field: isActive');
             assert(typeof isActive === 'boolean', 'isActive must be a boolean');
 
             next();
