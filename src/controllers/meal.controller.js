@@ -23,6 +23,7 @@ const mealController = {
             isVegan,
             isActive,
             dateTime,
+            maxAmountOfParticipants,
         } = meal;
 
         try {
@@ -61,12 +62,19 @@ const mealController = {
             // Validate isActive field
             assert(isActive !== null && isActive !== undefined, 'Missing field: isActive');
             assert(typeof isActive === 'boolean', 'isActive must be a boolean');
+ 
+            // Validate maxAmountOfParticipants field
+            assert(maxAmountOfParticipants !== null && maxAmountOfParticipants !== undefined, 'Missing field: maxAmountOfParticipants');
+            assert(typeof maxAmountOfParticipants === 'number', 'maxAmountOfParticipants must be a number');
 
             next();
         } catch (err) {
-            // If any validation fails, handle the error and pass it to the next middleware
-            const error = { status: 400, message: err.message, meal};
-            next(error);
+            // If any validation fails, handle the error
+            res.status(400).json({
+                status: 400,
+                message: err.message,
+                meal
+              });
         }
     },
 
