@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const mealController = require('../controllers/meal.controller');
-const authController = require('../controllers/authentication.controller');
+const authController = require('../controllers/auth.controller');
 
 // UC-301
 router.post(
@@ -27,8 +27,6 @@ router.get(
 router.put(
 	'/api/meal/:mealId',
 	authController.validateToken,
-	authController.validateOwnership,
-	mealController.validateMealUpdate,
 	mealController.updateMealById
 );
 
@@ -36,7 +34,6 @@ router.put(
 router.delete(
 	'/api/meal/:mealId',
 	authController.validateToken,
-	authController.validateOwnership,
 	mealController.deleteMealById
 );
 
@@ -44,7 +41,6 @@ router.delete(
 router.get(
 	'/api/meal/:mealId/participate',
 	authController.validateToken,
-	mealController.participateMeal
 );
 
 module.exports = router;
