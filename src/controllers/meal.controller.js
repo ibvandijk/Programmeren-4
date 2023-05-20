@@ -378,12 +378,9 @@ const mealController = {
                     if (results.length === 0) {
                         // No meal found with the provided mealId
                         conn.release();
-                        const error = {
-                            status: 404,
-                            message: `Meal with ID ${mealId} not found.`,
-                        };
-                        next(error);
-                        return;
+                        const notFoundError = new Error(`Meal with ID ${mealId} not found.`);
+                        notFoundError.status = 404;
+                        return next(notFoundError);
                     }
     
                     const meal = results[0];
@@ -416,7 +413,6 @@ const mealController = {
     
                             if (deleteResults.affectedRows === 0) {
                                 // No meal found with the provided mealId
-                                conn.release();
                                 const notFoundError = new Error(`Meal with ID ${mealId} not found.`);
                                 notFoundError.status = 404;
                                 return next(notFoundError);
