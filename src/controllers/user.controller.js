@@ -59,9 +59,12 @@ const userController = {
 
         next();
     } catch (err) {
-        // If any validation fails, handle the error and pass it to the next middleware
-        const error = { status: 400, message: err.message };
-        next(error);
+        // If any validation fails, handle the error
+        res.status(400).json({
+          status: 400,
+          message: err.message,
+          user
+        });
     }
   },
 
@@ -305,7 +308,7 @@ const userController = {
 
   updateUser: (req, res) => {
     logger.info('updateUser called');
-    
+
     // Update user from userId
     logger.info('Update user')
 
