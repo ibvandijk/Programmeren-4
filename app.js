@@ -47,9 +47,9 @@ app.use('*', (req, res) => {
 
 // Express error handler
 app.use((err, req, res, next) => {
-  logger.error(err.code, err.message);
-  res.status(err.code).json({
-    statusCode: err.code,
+  logger.error(err.status, err.message);
+  res.status(err.status).json({
+    statusCode: err.status || 500,
     message: err.message,
     data: {}
   });
