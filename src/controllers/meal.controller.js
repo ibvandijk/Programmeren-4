@@ -370,8 +370,7 @@ const mealController = {
                 }
             );
         });
-    },
-      
-      
-      
+    }, 
 }
+
+module.exports = mealController;
