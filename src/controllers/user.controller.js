@@ -3,63 +3,73 @@ const logger = require('../util/utils').logger;
 const assert = require('assert');
 const pool = require('../util/mysql-db');
 const jwt = require('jsonwebtoken');
+const validate = require('../util/validate');
 
-const {key} = 'my-secret-key';
-
+const jwtSecretKey = require('../config/config.js').jwtSecretKey;
 
 const userController = {
+  validateUser: (req, res) => {
+    logger.info('validateUser called');
+    let user = req.body;
 
-// UC-101 login function => '/api/login'
-loginUser: (req, res) => {
-  const { emailAdress, password } = req.body;
-
-  // Check if emailAdress or password is undefined
-  if (!emailAdress || !password) {
-    return res.status(400).json({ message: 'emailAdress and password are required' });
-  }
-
-  pool.getConnection((err, conn) => {
-    if (err) {
-      console.error('Error establishing database connection:', err);
-      return res.status(500).json({ message: 'Internal server error' });
-    }
+    // extract required fields
+    let {
+        firstName,
+        lastName,
+        isActive,
+        emailAdress,
+        password,
+        phoneNumber,
+        roles,
+        street,
+        city,
+    } = user;
 
     try {
-      // Execute the SQL query to find the user by email and password
-      const sqlQuery = 'SELECT * FROM user WHERE emailAdress = ? AND password = ?';
-      conn.query(sqlQuery, [emailAdress, password], (error, results) => {
-        conn.release(); // Release the connection after the query
+        // Validate firstName field
+        assert(firstName, "Missing field: firstName");
+        assert(typeof firstName === "string", "firstName must be a String");
 
-        if (error) {
-          console.error('Error executing SQL query:', error);
-          return res.status(500).json({ message: 'Internal server error' });
-        }
+        // Validate lastName field
+        assert(lastName, "Missing field: lastName");
+        assert(typeof lastName === "string", "lastName must be a String");
 
-        // Check if the user exists
-        if (results.length === 0) {
-          return res.status(401).json({ message: 'Invalid email or password' });
-        }
+        // Validate emailAdress field
+        assert(emailAdress, "Missing field: emailAdress");
+        assert(typeof emailAdress === "string", "emailAdress must be a String");
+        assert(validate.validateEmailAdress(emailAdress), "emailAdress is not valid");
 
-        const user = results[0];
+        // Validate password field
+        assert(password, "Missing field: password");
+        assert(typeof password === "string", "password must be a String");
+        assert(validate.validatePassword(password), "password is not valid");
 
-        // Generate a JWT token
-        const token = jwt.sign({ userId: user.id }, key);
+        // Validate phoneNumber field
+        assert(phoneNumber, "Missing field: phoneNumber");
+        assert(typeof phoneNumber === "string", "phoneNumber must be a String");
+        assert(validate.validatePhoneNumber(phoneNumber), "phoneNumber is not valid");
 
-        // Return the token to the client
-        res.status(200).json({ token });
-      });
-    } catch (error) {
-      console.error('Error during login:', error);
-      res.status(500).json({ message: 'Internal server error' });
+        // Validate street field
+        assert(street, "Missing field: street");
+        assert(typeof street === "string", "street must be a String");
+
+        // Validate city field
+        assert(city, "Missing field: city");
+        assert(typeof city === "string", "city must be a String");
+
+        next();
+    } catch (err) {
+        // If any validation fails, handle the error and pass it to the next middleware
+        const error = { status: 400, message: err.message };
+        next(error);
     }
-  });
-},
-
+  },
 
 
 
   // UC-201 Registreren als nieuwe user
   createUser: (req, res) => {
+    logger.info('createUser called');
 		let user = req.body;
 
 		// Establish a database connection
@@ -106,6 +116,7 @@ loginUser: (req, res) => {
 
   // UC-202 Opvragen van overzicht van users
   getUserList: (req, res) => {
+    logger.info('getUserList called');
     const queryParams = req.query;
   
     let dbQuery = 'SELECT * FROM user';
@@ -156,10 +167,11 @@ loginUser: (req, res) => {
 
   // UC-203 Opvragen van gebruikersprofiel
   getUserProfile: (req, res, next) => {
+    logger.info('getUserProfile called');
     const token = req.headers.authorization.split(' ')[1]; // the token is sent in the request headers as "Authorization"
 
     // Verify and decode the JWT token
-    jwt.verify(token, key, (error, decodedToken) => {
+    jwt.verify(token, jwtSecretKey, (error, decodedToken) => {
       if (error) {
         // Token verification failed
         
@@ -207,6 +219,7 @@ loginUser: (req, res) => {
   },
   
   getUserProfileById: (req, res) => {
+    logger.info('getUserProfileById called');
     logger.trace('Show user with user id', req.params.userId);
 
     let sqlStatement = 'SELECT * FROM `user` WHERE id=?';
@@ -245,6 +258,7 @@ loginUser: (req, res) => {
   
   // UC-206 Verwijderen van user
   deleteUser: (req, res) => {
+    logger.info('deleteUser called');
     logger.trace('Delete user profile', req.params.userId);
 
     let sqlStatement = 'DELETE FROM `user` WHERE id=?';
@@ -290,6 +304,8 @@ loginUser: (req, res) => {
   },
 
   updateUser: (req, res) => {
+    logger.info('updateUser called');
+    
     // Update user from userId
     logger.info('Update user')
 
