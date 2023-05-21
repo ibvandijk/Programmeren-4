@@ -31,6 +31,10 @@ const mealController = {
             assert(name !== null && name !== undefined, 'Missing field: name');
             assert(typeof name === 'string', 'name must be a string');
 
+            // Validate maxAmountOfParticipants field
+            assert(maxAmountOfParticipants !== null && maxAmountOfParticipants !== undefined, 'Missing field: maxAmountOfParticipants');
+            assert(typeof maxAmountOfParticipants === 'number', 'maxAmountOfParticipants must be a number');
+
             // Validate imageUrl field
             assert(imageUrl !== null && imageUrl !== undefined, 'Missing field: imageUrl');
             assert(typeof imageUrl === 'string', 'imageUrl must be a string');
@@ -62,10 +66,66 @@ const mealController = {
             // Validate isActive field
             assert(isActive !== null && isActive !== undefined, 'Missing field: isActive');
             assert(typeof isActive === 'boolean', 'isActive must be a boolean');
+
+            next();
+        } catch (err) {
+            // If any validation fails, handle the error
+            return next({
+                status: 400,
+                message: err.message,
+                meal
+            });
+        }
+    },
+
+    validateMealUpdate: (req, res, next) => {
+        logger.info('validateMeal called');
+        let meal = req.body;
+
+        // Extract required fields
+        let {
+            name,
+            description,
+            isToTakeHome,
+            imageUrl,
+            price,
+            isVega,
+            isVegan,
+            isActive,
+            dateTime,
+            maxAmountOfParticipants,
+        } = meal;
+
+        try {
+            // Validate name field
+            if (name) { assert(typeof name === 'string', 'name must be a string')};
+
+            // Validate imageUrl field
+            if (imageUrl) {  assert(typeof imageUrl === 'string', 'imageUrl must be a string')};
+
+            // Validate description field
+            if (description) {  assert(typeof description === 'string', 'description must be a string')};
+
+            // Validate price field
+            if (price) { assert(typeof price === 'number', 'price must be a number')};
+
+            // Validate dateTime field
+            if (dateTime) { assert(typeof dateTime === 'string', 'dateTime must be a string')};
+
+            // Validate isToTakeHome field
+            if (isToTakeHome) { assert(typeof isToTakeHome === 'boolean', 'isToTakeHome must be a boolean')};
+
+            // Validate isVega field
+            if (isVega) { assert(typeof isVega === 'boolean', 'isVega must be a boolean')};
+
+            // Validate isVegan field
+            if (isVegan) { assert(typeof isVegan === 'boolean', 'isVegan must be a boolean')};
+
+            // Validate isActive field
+            if (isActive) { assert(typeof isActive === 'boolean', 'isActive must be a boolean')};
  
             // Validate maxAmountOfParticipants field
-            assert(maxAmountOfParticipants !== null && maxAmountOfParticipants !== undefined, 'Missing field: maxAmountOfParticipants');
-            assert(typeof maxAmountOfParticipants === 'number', 'maxAmountOfParticipants must be a number');
+            if (maxAmountOfParticipants) { assert(typeof maxAmountOfParticipants === 'number', 'maxAmountOfParticipants must be a number')};
 
             next();
         } catch (err) {
@@ -151,6 +211,7 @@ const mealController = {
                     // Send a 201 status with the inserted meal as a response
                     res.status(201).json({
                     status: 201,
+                    message: 'Successfully added meal.',
                     result: insertedMeal,
                     });
                 });
@@ -160,12 +221,13 @@ const mealController = {
     
     
     // UC-302 Wijzingen van maaltijdgegevens
-	updateMealById: (req, res, next) => {
+    updateMealById: (req, res, next) => {
         const mealId = req.params.mealId;
         const newMealInfo = req.body;
+        const userId = req.userId; // Assuming you have the user ID available in the request
+
         const price = parseFloat(newMealInfo.price);
-        const updateAllergenes = req.body.allergenes.join();
-      
+
         pool.getConnection((err, conn) => {
             if (err) {
                 // Handle connection error
@@ -174,73 +236,104 @@ const mealController = {
                     message: 'Failed to get a database connection.'
                 });
             }
-      
-          const sqlUpdateQuery =
-            'UPDATE meal SET name = ?, description = ?, isActive = ?, isVega = ?, isVegan = ?, isToTakeHome = ?, dateTime = STR_TO_DATE(?,"%Y-%m-%dT%H:%i:%s.%fZ"), imageUrl = ?, allergenes = ?, maxAmountOfParticipants = ?, price = ? WHERE id = ?';
-      
-          conn.query(
-            sqlUpdateQuery,
-            [
-              newMealInfo.name,
-              newMealInfo.description,
-              newMealInfo.isActive,
-              newMealInfo.isVega,
-              newMealInfo.isVegan,
-              newMealInfo.isToTakeHome,
-              newMealInfo.dateTime,
-              newMealInfo.imageUrl,
-              updateAllergenes,
-              newMealInfo.maxAmountOfParticipants,
-              price,
-              mealId
-            ],
-            (error, results, fields) => {
-                conn.release();
-        
+
+            const sqlSelectQuery = 'SELECT * FROM meal WHERE id = ?';
+
+            conn.query(sqlSelectQuery, [mealId], (error, results, fields) => {
                 if (error) {
+                    conn.release();
+                    return next({
+                        status: 500,
+                        message: 'Failed to retrieve meal from the database.'
+                    });
+                }
+
+                if (results.length === 0) {
+                    conn.release();
                     return next({
                         status: 404,
                         message: `Meal with ID ${mealId} not found`
                     });
                 }
-        
-                if (results.affectedRows > 0) {
-                    conn.query(
-                        'SELECT * FROM meal WHERE id = ?',
-                        [mealId],
-                        (error, results, fields) => {
-                            if (error) {
-                                // Handle query execution error
-                                return next({
-                                    status: 500,
-                                    message: 'Failed to retrieve meal from the database.'
-                                });
-                            }
-                            
-            
-                            results[0].price = price;
-                            results[0].isActive = newMealInfo.isActive ? true : false;
-                            results[0].isVega = newMealInfo.isVega ? true : false;
-                            results[0].isVegan = newMealInfo.isVegan ? true : false;
-                            results[0].isToTakeHome = newMealInfo.isToTakeHome ? true : false;
-            
-                            res.status(200).json({
-                            code: 200,
-                            message: 'Update Meal by ID',
-                            result: results[0]
-                            });
-                        }
-                    );
-                } else {
+
+                const meal = results[0];
+
+                if (meal.cookid !== userId) {
+                    conn.release();
                     return next({
-                    status: 404,
-                    message: `Meal with ID ${mealId} not found`
+                        status: 403,
+                        message: 'Unauthorized: You are not allowed to update this meal.'
                     });
                 }
-            }
-            );
+
+                const sqlUpdateQuery =
+                    'UPDATE meal SET name = ?, description = ?, isActive = ?, isVega = ?, isVegan = ?, isToTakeHome = ?, dateTime = STR_TO_DATE(?,"%Y-%m-%dT%H:%i:%s.%fZ"), imageUrl = ?, allergenes = ?, maxAmountOfParticipants = ?, price = ? WHERE id = ?';
+
+                conn.query(
+                    sqlUpdateQuery,
+                    [
+                        newMealInfo.name,
+                        newMealInfo.description,
+                        newMealInfo.isActive,
+                        newMealInfo.isVega,
+                        newMealInfo.isVegan,
+                        newMealInfo.isToTakeHome,
+                        newMealInfo.dateTime,
+                        newMealInfo.imageUrl,
+                        newMealInfo.maxAmountOfParticipants,
+                        price,
+                        mealId
+                    ],
+                    (error, results, fields) => {
+                        conn.release();
+
+                        if (error) {
+                            return next({
+                                status: 500,
+                                message: 'Failed to update meal in the database.'
+                            });
+                        }
+
+                        if (results.affectedRows > 0) {
+                            // Retrieve the updated meal from the database
+                            conn.query(
+                                'SELECT * FROM meal WHERE id = ?',
+                                [mealId],
+                                (error, results, fields) => {
+                                    if (error) {
+                                        // Handle query execution error
+                                        return next({
+                                            status: 500,
+                                            message: 'Failed to retrieve meal from the database.'
+                                        });
+                                    }
+
+                                    const updatedMeal = results[0];
+                                    updatedMeal.price = price;
+                                    updatedMeal.isActive = newMealInfo.isActive ? true : false;
+                                    updatedMeal.isVega = newMealInfo.isVega ? true : false;
+                                    updatedMeal.isVegan = newMealInfo.isVegan ? true : false;
+                                    updatedMeal.isToTakeHome = newMealInfo.isToTakeHome ? true : false;
+
+                                    res.status(200).json({
+                                        status: 200,
+                                        message: 'Update Meal by ID',
+                                        result: updatedMeal
+                                    });
+                                }
+                            );
+                        } else {
+                            return next({
+                                status: 404,
+                                message: `Meal with ID ${mealId} not found`
+                            });
+                        }
+                    }
+                );
+            });
         });
     },
+      
         
 
     

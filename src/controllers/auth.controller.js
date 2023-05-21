@@ -63,9 +63,9 @@ const authController = {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
       logger.warn('Authorization header missing!');
-      return res.status(401).json({
+      return next({
         status: 401,
-        message: 'Authorization header missing!',
+        message: 'Authorization header missing!'
       });
     }
   
@@ -76,9 +76,9 @@ const authController = {
     jwt.verify(token, jwtSecretKey, (err, payload) => {
       if (err) {
         logger.warn('Not authorized');
-        return res.status(401).json({
+        return next({
           status: 401,
-          message: 'Not authorized',
+          message: 'Not authorized'
         });
       }
   
