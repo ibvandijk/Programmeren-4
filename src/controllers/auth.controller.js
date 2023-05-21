@@ -83,7 +83,7 @@ const authController = {
       }
   
       // Token is valid, set the userId in the request for future use
-      req.userId = payload.userId;
+      req.userId = payload.id;
       logger.debug('Token is valid', payload);
       next();
     });
