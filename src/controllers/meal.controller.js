@@ -189,6 +189,8 @@ const mealController = {
                     });
                 }
 
+                logger.error("this is the update found meal: ", results);
+
                 if (results.length === 0) {
                     conn.release();
                     return next({
@@ -227,7 +229,7 @@ const mealController = {
                         newMealInfo.isVegan,
                         newMealInfo.isToTakeHome,
                         newMealInfo.imageUrl,
-                        meal.updateAllergenes,
+                        ' ',
                         newMealInfo.maxAmountOfParticipants,
                         price,
                         mealId
