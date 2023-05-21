@@ -313,9 +313,10 @@ describe('CRUD Meals /api/meal', () => {
 				.send(updatedFields)
 				.end((err, res) => {
 					res.should.be.an('object');
+					logger.error(res);
 					let { status, result } = res.body;
 					// Verify that the response status and error message are correct
-					status.should.equals(200);
+					expect(status).to.equal(200);
 					expect(result.description).to.equal(updatedFields.description);
 					expect(result.imageUrl).to.equal(updatedFields.imageUrl);
 					expect(result.isActive).to.equal(updatedFields.isActive);
