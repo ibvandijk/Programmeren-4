@@ -268,7 +268,7 @@ describe('CRUD Meals /api/meal', () => {
 				isVega: true,
 				isVegan: false,
 				isActive: true,
-				dateTime: "2023-05-21T12:00:00Z",
+				dateTime: "2023-05-21 12:00:00",
 				maxAmountOfParticipants: 4
 			};
 
