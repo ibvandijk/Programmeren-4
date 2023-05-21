@@ -70,7 +70,6 @@ const mealController = {
             next();
         } catch (err) {
             // If any validation fails, handle the error
-            logger.error(400, err.message);
             return next({
                 status: 400,
                 message: err.message,
@@ -189,8 +188,6 @@ const mealController = {
                     });
                 }
 
-                logger.error("this is the update found meal: ", results);
-
                 if (results.length === 0) {
                     conn.release();
                     return next({
@@ -208,8 +205,6 @@ const mealController = {
                         message: 'Unauthorized: You are not allowed to update this meal.'
                     });
                 }
-
-                logger.error("meal id is", mealId);
 
                 const sqlUpdateQuery =
                     `UPDATE meal SET name = ?, description = ?, isActive = ?, isVega = ?, isVegan = ?, isToTakeHome = ?, imageUrl = ?, allergenes = ?, maxAmountOfParticipants = ?, price = ? WHERE id = ?`;
@@ -361,9 +356,6 @@ const mealController = {
                         message: `Meal with ID: ${mealId} not found!`
                     });
                 }
-
-
-                logger.error('has hit error', results);
 
                 // Modify result properties to boolean values
                 results[0].isActive = !!results[0].isActive;
