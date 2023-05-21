@@ -210,7 +210,7 @@ const mealController = {
                 logger.error("meal id is", mealId);
 
                 const sqlUpdateQuery =
-                    `UPDATE meal SET name = ?, description = ?, isActive = ?, isVega = ?, isVegan = ?, isToTakeHome = ?, dateTime = STR_TO_DATE(?,"%Y-%m-%dT%H:%i:%s.%fZ"), imageUrl = ?, allergenes = ?, maxAmountOfParticipants = ?, price = ? WHERE id = ?`;
+                    `UPDATE meal SET name = ?, description = ?, isActive = ?, isVega = ?, isVegan = ?, isToTakeHome = ?, imageUrl = ?, allergenes = ?, maxAmountOfParticipants = ?, price = ? WHERE id = ?`;
 
                 // ensures that the booleans are converted to 0 or 1, for the query.
                 newMealInfo.isActive = (newMealInfo.isActive) ? 1 : 0
@@ -226,7 +226,6 @@ const mealController = {
                         newMealInfo.isVega,
                         newMealInfo.isVegan,
                         newMealInfo.isToTakeHome,
-                        newMealInfo.dateTime,
                         newMealInfo.imageUrl,
                         meal.updateAllergenes,
                         newMealInfo.maxAmountOfParticipants,
