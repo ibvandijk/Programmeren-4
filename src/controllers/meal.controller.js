@@ -70,66 +70,7 @@ const mealController = {
             next();
         } catch (err) {
             // If any validation fails, handle the error
-            return next({
-                status: 400,
-                message: err.message,
-                meal
-            });
-        }
-    },
-
-    validateMealUpdate: (req, res, next) => {
-        logger.info('validateMeal called');
-        let meal = req.body;
-
-        // Extract required fields
-        let {
-            name,
-            description,
-            isToTakeHome,
-            imageUrl,
-            price,
-            isVega,
-            isVegan,
-            isActive,
-            dateTime,
-            maxAmountOfParticipants,
-        } = meal;
-
-        try {
-            // Validate name field
-            if (name) { assert(typeof name === 'string', 'name must be a string')};
-
-            // Validate imageUrl field
-            if (imageUrl) {  assert(typeof imageUrl === 'string', 'imageUrl must be a string')};
-
-            // Validate description field
-            if (description) {  assert(typeof description === 'string', 'description must be a string')};
-
-            // Validate price field
-            if (price) { assert(typeof price === 'number', 'price must be a number')};
-
-            // Validate dateTime field
-            if (dateTime) { assert(typeof dateTime === 'string', 'dateTime must be a string')};
-
-            // Validate isToTakeHome field
-            if (isToTakeHome) { assert(typeof isToTakeHome === 'boolean', 'isToTakeHome must be a boolean')};
-
-            // Validate isVega field
-            if (isVega) { assert(typeof isVega === 'boolean', 'isVega must be a boolean')};
-
-            // Validate isVegan field
-            if (isVegan) { assert(typeof isVegan === 'boolean', 'isVegan must be a boolean')};
-
-            // Validate isActive field
-            if (isActive) { assert(typeof isActive === 'boolean', 'isActive must be a boolean')};
- 
-            // Validate maxAmountOfParticipants field
-            if (maxAmountOfParticipants) { assert(typeof maxAmountOfParticipants === 'number', 'maxAmountOfParticipants must be a number')};
-
-            next();
-        } catch (err) {
-            // If any validation fails, handle the error
+            logger.error(400, err.message);
             return next({
                 status: 400,
                 message: err.message,
@@ -224,9 +165,9 @@ const mealController = {
     updateMealById: (req, res, next) => {
         const mealId = req.params.mealId;
         const newMealInfo = req.body;
-        const userId = req.userId; // Assuming you have the user ID available in the request
+        const userId = req.userId;
 
-        const price = parseFloat(newMealInfo.price);
+        let price = parseFloat(newMealInfo.price);
 
         pool.getConnection((err, conn) => {
             if (err) {
@@ -266,9 +207,16 @@ const mealController = {
                     });
                 }
 
-                const sqlUpdateQuery =
-                    'UPDATE meal SET name = ?, description = ?, isActive = ?, isVega = ?, isVegan = ?, isToTakeHome = ?, dateTime = STR_TO_DATE(?,"%Y-%m-%dT%H:%i:%s.%fZ"), imageUrl = ?, allergenes = ?, maxAmountOfParticipants = ?, price = ? WHERE id = ?';
+                logger.error("meal id is", mealId);
 
+                const sqlUpdateQuery =
+                    `UPDATE meal SET name = ?, description = ?, isActive = ?, isVega = ?, isVegan = ?, isToTakeHome = ?, dateTime = STR_TO_DATE(?,"%Y-%m-%dT%H:%i:%s.%fZ"), imageUrl = ?, allergenes = ?, maxAmountOfParticipants = ?, price = ? WHERE id = ?`;
+
+                // ensures that the booleans are converted to 0 or 1, for the query.
+                newMealInfo.isActive = (newMealInfo.isActive) ? 1 : 0
+                newMealInfo.isVega = (newMealInfo.isVega) ? 1 : 0
+                newMealInfo.isVegan = (newMealInfo.isVegan) ? 1 : 0
+                newMealInfo.isToTakeHome = (newMealInfo.isToTakeHome) ? 1 : 0
                 conn.query(
                     sqlUpdateQuery,
                     [
@@ -280,6 +228,7 @@ const mealController = {
                         newMealInfo.isToTakeHome,
                         newMealInfo.dateTime,
                         newMealInfo.imageUrl,
+                        meal.updateAllergenes,
                         newMealInfo.maxAmountOfParticipants,
                         price,
                         mealId
@@ -288,6 +237,7 @@ const mealController = {
                         conn.release();
 
                         if (error) {
+                            logger.error(error);
                             return next({
                                 status: 500,
                                 message: 'Failed to update meal in the database.'
@@ -409,6 +359,9 @@ const mealController = {
                         message: `Meal with ID: ${mealId} not found!`
                     });
                 }
+
+
+                logger.error('has hit error', results);
 
                 // Modify result properties to boolean values
                 results[0].isActive = !!results[0].isActive;
