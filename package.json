@@ -4,8 +4,9 @@
   "description": "cd",
   "main": "app.js",
   "scripts": {
+    "start": "node app.js",
     "dev": "nodemon app.js",
-    "test": "mocha test/**/*.test.js --exit"
+    "test": "mocha -reporter spec test/**/*.test.js --exit"
   },
   "keywords": [
     "javascript",
@@ -15,9 +16,11 @@
   "author": "Ivan van Dijk",
   "license": "MIT",
   "dependencies": {
+    "body-parser": "^1.20.0",
+    "dotenv": "^16.0.0",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
-    "mysql2": "^3.2.3",
+    "mysql2": "^3.3.1",
     "tracer": "^1.1.6"
   },
   "devDependencies": {

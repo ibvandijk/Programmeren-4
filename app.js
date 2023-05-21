@@ -4,6 +4,9 @@ const logger = require('./src/util/utils').logger;
 const app = express();
 const port = process.env.PORT || 3000;
 
+const bodyParser = require('body-parser');
+app.use(bodyParser.json());
+
 
 //Log all requests
 app.all('*', (req, res, next) => {
@@ -14,14 +17,9 @@ app.all('*', (req, res, next) => {
 
 // References to the routes;
 const userRoutes = require('./src/routes/user.routes');
-app.use('/api/user', userRoutes);
-
-// UC-101 inloggen
-const userController = require('./src/controllers/user.controller.js');
-app.post('/api/login', (req, res) => {
-  userController.loginUser(req.body);
-});
-
+const mealRoutes= require('./src/routes/meal.routes')
+app.use(userRoutes);
+app.use(mealRoutes);
 
 // UC-102 Opvragen van systeeminformatie
 app.get('/api/info', (req, res) => {
@@ -49,11 +47,11 @@ app.use('*', (req, res) => {
 
 // Express error handler
 app.use((err, req, res, next) => {
-  logger.error(err.code, err.message);
-  res.status(err.code).json({
-    statusCode: err.code,
-    message: err.message,
-    data: {}
+  logger.error(err.status, err.message);
+  res.status(err.status).json({
+    statusCode: err.status || 500,
+    message: err.message || 'Internal server error', 
+    data: err.data || {}
   });
 });
 

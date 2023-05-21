@@ -3,71 +3,107 @@ const logger = require('../util/utils').logger;
 const assert = require('assert');
 const pool = require('../util/mysql-db');
 const jwt = require('jsonwebtoken');
+const validate = require('../util/validate');
+
+const jwtSecretKey = require('../config/config.js').jwtSecretKey;
 
 const userController = {
+  validateUser: (req, res) => {
+    logger.info('validateUser called');
+    let user = req.body;
 
-  // UC-101 login function => '/api/login' 
-  loginUser: (req, res) => {
-    logger.trace('Login user ', req.body);
-    
-    const { email, password } = req.body;
+    // extract required fields
+    let {
+        firstName,
+        lastName,
+        isActive,
+        emailAdress,
+        password,
+        phoneNumber,
+        roles,
+        street,
+        city,
+    } = user;
 
     try {
-      // Execute the SQL query to find the user by email and password
-      const sqlQuery = 'SELECT * FROM user WHERE email = ? AND password = ?';
-      dbconnection.query(sqlQuery, [email, password], (error, results) => {
-        if (error) {
-          console.error('Error executing SQL query:', error);
-          return res.status(500).json({ message: 'Internal server error' });
-        }
+        // Validate firstName field
+        assert(firstName, "Missing field: firstName");
+        assert(typeof firstName === "string", "firstName must be a String");
 
-        // Check if the user exists
-        if (results.length === 0) {
-          return res.status(401).json({ message: 'Invalid email or password' });
-        }
+        // Validate lastName field
+        assert(lastName, "Missing field: lastName");
+        assert(typeof lastName === "string", "lastName must be a String");
 
-        const user = results[0];
+        // Validate emailAdress field
+        assert(emailAdress, "Missing field: emailAdress");
+        assert(typeof emailAdress === "string", "emailAdress must be a String");
+        assert(validate.validateEmailAdress(emailAdress), "emailAdress is not valid");
 
-        // Generate a JWT token
-        const token = jwt.sign({ userId: user.id }, 'your-secret-key', { expiresIn: '1h' });
+        // Validate password field
+        assert(password, "Missing field: password");
+        assert(typeof password === "string", "password must be a String");
+        assert(validate.validatePassword(password), "password is not valid");
 
-        // Return the token to the client
-        res.status(200).json({ token });
-      });
-    } catch (error) {
-      console.error('Error during login:', error);
-      res.status(500).json({ message: 'Internal server error' });
+        // Validate phoneNumber field
+        assert(phoneNumber, "Missing field: phoneNumber");
+        assert(typeof phoneNumber === "string", "phoneNumber must be a String");
+        assert(validate.validatePhoneNumber(phoneNumber), "phoneNumber is not valid");
+
+        // Validate street field
+        assert(street, "Missing field: street");
+        assert(typeof street === "string", "street must be a String");
+
+        // Validate city field
+        assert(city, "Missing field: city");
+        assert(typeof city === "string", "city must be a String");
+
+        next();
+    } catch (err) {
+        // If any validation fails, handle the error
+        res.status(400).json({
+          status: 400,
+          message: err.message,
+          user
+        });
     }
   },
 
 
+
   // UC-201 Registreren als nieuwe user
   createUser: (req, res) => {
+    logger.info('createUser called');
 		let user = req.body;
 
 		// Establish a database connection
-    pool.getConnection(function (err, connection) {
-	    if (err) throw err;
+    pool.getConnection(function (err, conn) {
+	    if (err) {
+        // Handle connection error
+        return next({
+            status: 500,
+            message: 'Failed to get a database connection.'
+        });
+      }
 
       // Insert user data into the 'user' table
-      connection.query(
+      conn.query(
         'INSERT INTO user (firstName, lastName, street, city, phoneNumber, emailAdress, password) VALUES (?, ?, ?, ?, ?, ?, ?);',
         [user.firstName, user.lastName, user.street, user.city, user.phoneNumber, user.emailAdress, user.password, ],
         function (err, result, fields) {
           if (err) {
             // If there is an error, release the connection and send a 409 status with an error message
-            connection.release();
+            conn.release();
             res.status(409).json({
               status: 409,
               message: `The email address: ${user.emailAdress} has already been taken!`,
             });
           } else {
             // If the user is successfully inserted, retrieve the inserted user from the database
-            connection.query(
+            conn.query(
               'SELECT * FROM user WHERE emailAdress = ?',
               [user.emailAdress],
               function (error, results, fields) {
-                connection.release();
+                conn.release();
                 user = results[0];
 
                 // Set isActive property to true if it's true, otherwise set it to false (ensures that user.isActive is always a boolean value)
@@ -89,6 +125,7 @@ const userController = {
 
   // UC-202 Opvragen van overzicht van users
   getUserList: (req, res) => {
+    logger.info('getUserList called');
     const queryParams = req.query;
   
     let dbQuery = 'SELECT * FROM user';
@@ -116,10 +153,23 @@ const userController = {
     }
   
     pool.getConnection(function (err, connection) {
-      if (err) throw err;
+      if (err) {
+        // Handle connection error
+        return next({
+            status: 500,
+            message: 'Failed to get a database connection.'
+        });
+      }
+
       connection.query(dbQuery, function (error, results, fields) {
         connection.release();
-        if (error) throw error;
+        if (error){
+          // Handle query execution error
+          return next({
+            status: 409,
+            message: 'Meal not created.'
+          });
+        }
   
         // Convert isActive property to boolean
         const userList = results.map(user => {
@@ -139,13 +189,17 @@ const userController = {
 
   // UC-203 Opvragen van gebruikersprofiel
   getUserProfile: (req, res, next) => {
-    const token = req.headers.authorization; // the token is sent in the request headers as "Authorization"
-  
+    logger.info('getUserProfile called');
+    const token = req.headers.authorization.split(' ')[1]; // the token is sent in the request headers as "Authorization"
+
     // Verify and decode the JWT token
-    jwt.verify(token, 'your-secret-key', (error, decodedToken) => {
+    jwt.verify(token, jwtSecretKey, (error, decodedToken) => {
       if (error) {
         // Token verification failed
-        return res.status(401).json({ message: 'Invalid token' });
+        
+        return res.status(401).json({ 
+          message: 'Invalid token',
+          error});
       }
   
       const userId = decodedToken.userId; // Extract the user ID from the decoded token
@@ -155,16 +209,22 @@ const userController = {
   
       dbconnection.getConnection((err, connection) => {
         if (err) {
-          console.error('Error getting database connection:', err);
-          return res.status(500).json({ message: 'Database connection error' });
+          // Handle connection error
+          return next({
+              status: 500,
+              message: 'Failed to get a database connection.'
+          });
         }
   
         connection.query(sqlStatement, [userId], (error, results, fields) => {
           connection.release(); // Release the connection after the query
   
           if (error) {
-            console.error('Error executing SQL query:', error);
-            return res.status(500).json({ message: 'Internal server error' });
+            // Handle query execution error
+            return next({
+              status: 409,
+              message: 'Meal not created.'
+            });
           }
   
           if (results.length > 0) {
@@ -187,6 +247,7 @@ const userController = {
   },
   
   getUserProfileById: (req, res) => {
+    logger.info('getUserProfileById called');
     logger.trace('Show user with user id', req.params.userId);
 
     let sqlStatement = 'SELECT * FROM `user` WHERE id=?';
@@ -194,20 +255,20 @@ const userController = {
     pool.getConnection(function (err, conn) {
       // Do something with the connection
       if (err) {
-        logger.error(err.code, err.syscall, err.address, err.port);
-        next({
-          code: 500,
-          message: err.code
+        // Handle connection error
+        return next({
+            status: 500,
+            message: 'Failed to get a database connection.'
         });
       }
       if (conn) {
         conn.query(sqlStatement, [req.params.userId], (err, results, fields) => {
           if (err) {
-            logger.error(err.message);
-            next({
-              code: 409,
-              message: err.message
-            });
+            // Handle query execution error
+            return next({
+              status: 409,
+              message: 'Meal not created.'
+          });
           }
           if (results) {
             logger.trace('Found', results.length, 'results');
@@ -225,6 +286,7 @@ const userController = {
   
   // UC-206 Verwijderen van user
   deleteUser: (req, res) => {
+    logger.info('deleteUser called');
     logger.trace('Delete user profile', req.params.userId);
 
     let sqlStatement = 'DELETE FROM `user` WHERE id=?';
@@ -232,20 +294,20 @@ const userController = {
     pool.getConnection(function (err, conn) {
       // Do something with the connection
       if (err) {
-        logger.error(err.code, err.syscall, err.address, err.port);
-        next({
-          code: 500,
-          message: err.code
+        // Handle connection error
+        return next({
+            status: 500,
+            message: 'Failed to get a database connection.'
         });
       }
       if (conn) {
         conn.query(sqlStatement, [req.params.userId], (err, results, fields) => {
           if (err) {
-            logger.error(err.message);
-            next({
-              code: 409,
-              message: err.message
-            });
+            // Handle query execution error
+            return next({
+              status: 409,
+              message: 'Meal not created.'
+          });
           }
           if (results) {
             logger.trace('Found', results.length, 'results');
@@ -269,57 +331,11 @@ const userController = {
     });
   },
 
-  // UC-205 Wijzigen van usergegevens
-  updateUser: (req, res, next) => {
+  updateUser: (req, res) => {
+    logger.info('updateUser called');
 
-    const userId = req.params.id; // user ID is obtained from the request params
-    const userData = req.body; // the updated user data is provided in the request body
-
-    logger.trace('Update user with ID:', userId);
-
-    const sqlStatement = 'UPDATE `user` SET ? WHERE id = ?';
-
-    pool.getConnection((err, conn) => {
-      if (err) {
-        // Handle connection error
-        logger.error(err.code, err.syscall, err.address, err.port);
-        return next({
-          code: 500,
-          message: err.code
-        });
-      }
-
-      conn.query(sqlStatement, [userData, userId], (err, results, fields) => {
-        conn.release(); // Release the connection after the query
-
-        if (err) {
-          // Handle query error
-          logger.error(err.message);
-          return next({
-            code: 409,
-            message: err.message
-          });
-        }
-
-        if (results.affectedRows > 0) {
-          // User updated successfully
-          logger.trace('User updated with ID:', userId);
-          res.status(200).json({
-            code: 200,
-            message: 'User updated successfully'
-          });
-        } else {
-          // User not found or no changes made
-          res.status(404).json({
-            code: 404,
-            message: 'User not found or no changes made'
-          });
-        }
-      });
-    });
-  },
-
-
+    // Update user from userId
+    logger.info('Update user')
   
 }
 
