@@ -83,7 +83,7 @@ const userController = {
             status: 500,
             message: 'Failed to get a database connection.'
         });
-    }
+      }
 
       // Insert user data into the 'user' table
       conn.query(
