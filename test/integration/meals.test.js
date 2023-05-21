@@ -314,9 +314,6 @@ describe('CRUD Meals /api/meal', () => {
 				.end((err, res) => {
 					res.should.be.an('object');
 					let { status, result } = res.body;
-
-					logger.error("this is the body that is apparently undefined: ", res);
-
 					// Verify that the response status and error message are correct
 					status.should.equals(200);
 					expect(result.description).to.equal(updatedFields.description);

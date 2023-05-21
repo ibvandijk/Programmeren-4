@@ -238,10 +238,11 @@ const mealController = {
                         conn.release();
 
                         if (error) {
-                            logger.error(error);
+                            logger.error(500, error);
                             return next({
                                 status: 500,
-                                message: 'Failed to update meal in the database.'
+                                message: 'Failed to update meal in the database.',
+                                data: error
                             });
                         }
 
