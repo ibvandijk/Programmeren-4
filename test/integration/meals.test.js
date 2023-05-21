@@ -268,7 +268,7 @@ describe('CRUD Meals /api/meal', () => {
 				isVega: true,
 				isVegan: false,
 				isActive: true,
-				dateTime: "2023-05-21 12:00:00",
+				dateTime: "2023-05-21T12:00:00Z",
 				maxAmountOfParticipants: 4
 			};
 
@@ -289,46 +289,46 @@ describe('CRUD Meals /api/meal', () => {
 				});
 		});
 
-	 	it('TC-302-5 Meal updated succesfully', (done) => {
-	 		const mealId = 1;
-	 		const updatedFields = {
-	 			name: "Sample Meal",
-	 			description: "This is a delicious meal.",
-	 			isToTakeHome: true,
-	 			imageUrl: "https://example.com/meal-image.jpg",
-	 			price: 10.99,
-	 			isVega: true,
-	 			isVegan: false,
-	 			isActive: true,
-	 			dateTime: "2023-05-21T12:00:00Z",
-	 			maxAmountOfParticipants: 4
-	 		};
+		it('TC-302-5 Meal updated succesfully', (done) => {
+			const mealId = 1;
+			const updatedFields = {
+				name: "Sample Meal",
+				description: "This is a delicious meal.",
+				isToTakeHome: true,
+				imageUrl: "https://example.com/meal-image.jpg",
+				price: 10.99,
+				isVega: true,
+				isVegan: false,
+				isActive: true,
+				dateTime: "2023-05-21T12:00:00Z",
+				maxAmountOfParticipants: 4
+			};
 
-	 		chai.request(server)
-	 			.put(`/api/meal/${mealId}`)
-	 			.set(
-	 				'authorization',
-	 				'Bearer ' + jwt.sign({ userId: 1 }, jwtSecretKey)
-	 			)
-	 			.send(updatedFields)
-	 			.end((err, res) => {
-	 				res.should.be.an('object');
-	 				let { statusCode, result } = res.body;
-	 				// Verify that the response status and error message are correct
-	 				//expect(statusCode).to.equal(200);
-	 				expect(result.description).to.equal(updatedFields.description);
-	 				expect(result.imageUrl).to.equal(updatedFields.imageUrl);
-	 				expect(result.isActive).to.equal(updatedFields.isActive);
-	 				expect(result.isToTakeHome).to.equal(updatedFields.isToTakeHome);
-	 				expect(result.isVega).to.equal(updatedFields.isVega);
-	 				expect(result.isVegan).to.equal(updatedFields.isVegan);
-	 				expect(result.maxAmountOfParticipants).to.equal(updatedFields.maxAmountOfParticipants);
-	 				expect(result.name).to.equal(updatedFields.name);
-	 				expect(result.price).to.equal(updatedFields.price);
+			chai.request(server)
+				.put(`/api/meal/${mealId}`)
+				.set(
+					'authorization',
+					'Bearer ' + jwt.sign({ userId: 1 }, jwtSecretKey)
+				)
+				.send(updatedFields)
+				.end((err, res) => {
+					res.should.be.an('object');
+					let { status, result } = res.body;
+					// Verify that the response status and error message are correct
+					status.should.equals(200);
+					expect(result.description).to.equal(updatedFields.description);
+					expect(result.imageUrl).to.equal(updatedFields.imageUrl);
+					expect(result.isActive).to.equal(updatedFields.isActive);
+					expect(result.isToTakeHome).to.equal(updatedFields.isToTakeHome);
+					expect(result.isVega).to.equal(updatedFields.isVega);
+					expect(result.isVegan).to.equal(updatedFields.isVegan);
+					expect(result.maxAmountOfParticipants).to.equal(updatedFields.maxAmountOfParticipants);
+					expect(result.name).to.equal(updatedFields.name);
+					expect(result.price).to.equal(updatedFields.price);
 
-	 				done();
-	 			});
-	 	});
+					done();
+				});
+		});
 	});
 	// ----- UC-302 end -----
 
@@ -436,7 +436,4 @@ describe('CRUD Meals /api/meal', () => {
 				});
 		});
 	});
-	// ----- UC-304 end -----
-
-	// ----- UC-305 start -----
 });
