@@ -336,12 +336,6 @@ const userController = {
 
     // Update user from userId
     logger.info('Update user')
-
-    // userId is passed trough the url
-    const userId = parseInt(req.params.userId);
-    logger.debug('userId = ', userId);
-  }
-
   
 }
 
