@@ -70,11 +70,11 @@ const mealController = {
             next();
         } catch (err) {
             // If any validation fails, handle the error
-            res.status(400).json({
+              return next({
                 status: 400,
                 message: err.message,
                 meal
-              });
+            });
         }
     },
 
@@ -92,10 +92,9 @@ const mealController = {
         pool.getConnection((err, conn) => {
             if (err) {
             // Handle connection error
-            logger.error(err.code, err.syscall, err.address, err.port);
             return next({
-                code: 500,
-                message: err.code
+                code: err.status,
+                message: err.message
             });
             }
         
@@ -378,13 +377,13 @@ const mealController = {
                     if (results.length === 0) {
                         // No meal found with the provided mealId
                         conn.release();
-                        // const notFoundError = new Error(`Meal with ID ${mealId} not found.`);
-                        // notFoundError.status = 404;
-                        // return next(notFoundError);
-
+                        // return next({
+                        //     status: 404,
+                        //     message: `Meal with ID ${mealId} not found.`
+                        // });
                         return next({
-                            status: 404,
-                            message: `Meal with ID ${mealId} not found.`
+                            code: error.status,
+                            message: err.message
                         });
                     }
     
