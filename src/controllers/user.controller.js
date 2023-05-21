@@ -336,6 +336,7 @@ const userController = {
 
     // Update user from userId
     logger.info('Update user')
+  },
   
 }
 
