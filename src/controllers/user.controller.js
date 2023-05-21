@@ -76,28 +76,34 @@ const userController = {
 		let user = req.body;
 
 		// Establish a database connection
-    pool.getConnection(function (err, connection) {
-	    if (err) throw err;
+    pool.getConnection(function (err, conn) {
+	    if (err) {
+        // Handle connection error
+        return next({
+            status: 500,
+            message: 'Failed to get a database connection.'
+        });
+    }
 
       // Insert user data into the 'user' table
-      connection.query(
+      conn.query(
         'INSERT INTO user (firstName, lastName, street, city, phoneNumber, emailAdress, password) VALUES (?, ?, ?, ?, ?, ?, ?);',
         [user.firstName, user.lastName, user.street, user.city, user.phoneNumber, user.emailAdress, user.password, ],
         function (err, result, fields) {
           if (err) {
             // If there is an error, release the connection and send a 409 status with an error message
-            connection.release();
+            conn.release();
             res.status(409).json({
               status: 409,
               message: `The email address: ${user.emailAdress} has already been taken!`,
             });
           } else {
             // If the user is successfully inserted, retrieve the inserted user from the database
-            connection.query(
+            conn.query(
               'SELECT * FROM user WHERE emailAdress = ?',
               [user.emailAdress],
               function (error, results, fields) {
-                connection.release();
+                conn.release();
                 user = results[0];
 
                 // Set isActive property to true if it's true, otherwise set it to false (ensures that user.isActive is always a boolean value)
@@ -147,10 +153,23 @@ const userController = {
     }
   
     pool.getConnection(function (err, connection) {
-      if (err) throw err;
+      if (err) {
+        // Handle connection error
+        return next({
+            status: 500,
+            message: 'Failed to get a database connection.'
+        });
+      }
+
       connection.query(dbQuery, function (error, results, fields) {
         connection.release();
-        if (error) throw error;
+        if (error){
+          // Handle query execution error
+          return next({
+            status: 409,
+            message: 'Meal not created.'
+          });
+        }
   
         // Convert isActive property to boolean
         const userList = results.map(user => {
@@ -190,16 +209,22 @@ const userController = {
   
       dbconnection.getConnection((err, connection) => {
         if (err) {
-          console.error('Error getting database connection:', err);
-          return res.status(500).json({ message: 'Database connection error' });
+          // Handle connection error
+          return next({
+              status: 500,
+              message: 'Failed to get a database connection.'
+          });
         }
   
         connection.query(sqlStatement, [userId], (error, results, fields) => {
           connection.release(); // Release the connection after the query
   
           if (error) {
-            console.error('Error executing SQL query:', error);
-            return res.status(500).json({ message: 'Internal server error' });
+            // Handle query execution error
+            return next({
+              status: 409,
+              message: 'Meal not created.'
+            });
           }
   
           if (results.length > 0) {
@@ -230,20 +255,20 @@ const userController = {
     pool.getConnection(function (err, conn) {
       // Do something with the connection
       if (err) {
-        logger.error(err.code, err.syscall, err.address, err.port);
-        next({
-          code: 500,
-          message: err.code
+        // Handle connection error
+        return next({
+            status: 500,
+            message: 'Failed to get a database connection.'
         });
       }
       if (conn) {
         conn.query(sqlStatement, [req.params.userId], (err, results, fields) => {
           if (err) {
-            logger.error(err.message);
-            next({
-              code: 409,
-              message: err.message
-            });
+            // Handle query execution error
+            return next({
+              status: 409,
+              message: 'Meal not created.'
+          });
           }
           if (results) {
             logger.trace('Found', results.length, 'results');
@@ -269,20 +294,20 @@ const userController = {
     pool.getConnection(function (err, conn) {
       // Do something with the connection
       if (err) {
-        logger.error(err.code, err.syscall, err.address, err.port);
-        next({
-          code: 500,
-          message: err.code
+        // Handle connection error
+        return next({
+            status: 500,
+            message: 'Failed to get a database connection.'
         });
       }
       if (conn) {
         conn.query(sqlStatement, [req.params.userId], (err, results, fields) => {
           if (err) {
-            logger.error(err.message);
-            next({
-              code: 409,
-              message: err.message
-            });
+            // Handle query execution error
+            return next({
+              status: 409,
+              message: 'Meal not created.'
+          });
           }
           if (results) {
             logger.trace('Found', results.length, 'results');
