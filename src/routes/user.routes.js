@@ -4,7 +4,7 @@ const userController = require('../controllers/user.controller');
 const authController = require('../controllers/auth.controller');
 
 // UC-101 Login
-router.put(
+router.post(
     '/api/login',
     authController.loginUser,
 );
