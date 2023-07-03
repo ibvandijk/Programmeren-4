@@ -436,4 +436,7 @@ describe('CRUD Meals /api/meal', () => {
 				});
 		});
 	});
+	// ----- UC-304 end -----
+
+	// ----- UC-305 start -----
 });
