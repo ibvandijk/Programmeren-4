@@ -91,7 +91,7 @@ describe('UC-101 Inloggen', () => {
 				const { status, message } = res.body;
 				// Verify that the response status and error message are correct
 				expect(status).to.equal(400);
-				expect(message).to.equal('Incomplete login credentials');
+				expect(message).to.equal('emailAdress and password are required');
 				done();
 			});
 	});
@@ -129,7 +129,7 @@ describe('UC-101 Inloggen', () => {
 				const { status, message } = res.body;
 				// Verify that the response status and error message are correct
 				expect(status).to.equal(404);
-				expect(message).to.equal('User not found');
+				expect(message).to.equal('Invalid email address or password');
 				done();
 			});
 	});

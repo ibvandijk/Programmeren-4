@@ -46,7 +46,7 @@ const authController = {
 
           // Check if the user exists
           if (results.length === 0) {
-            return res.status(401).json({ message: 'Invalid email or password' });
+            return res.status(401).json({ message: 'Invalid email address or password' });
           }
 
           const user = results[0];
