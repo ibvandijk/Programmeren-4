@@ -57,7 +57,7 @@ describe('UC-101 Inloggen', () => {
 		};
 
 		chai.request(server)
-			.post('/api/auth/login')
+			.post('/api/login')
 			.send(loginData)
 			.end((err, res) => {
 				res.should.be.an('object');
@@ -84,7 +84,7 @@ describe('UC-101 Inloggen', () => {
 		};
 
 		chai.request(server)
-			.post('/api/auth/login')
+			.post('/api/login')
 			.send(loginData)
 			.end((err, res) => {
 				res.should.be.an('object');
@@ -103,7 +103,7 @@ describe('UC-101 Inloggen', () => {
 		};
 
 		chai.request(server)
-			.post('/api/auth/login')
+			.post('/api/login')
 			.send(loginData)
 			.end((err, res) => {
 				res.should.be.an('object');
@@ -122,7 +122,7 @@ describe('UC-101 Inloggen', () => {
 		};
 
 		chai.request(server)
-			.post('/api/auth/login')
+			.post('/api/login')
 			.send(loginData)
 			.end((err, res) => {
 				res.should.be.an('object');
