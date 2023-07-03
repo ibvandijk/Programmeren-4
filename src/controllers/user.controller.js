@@ -207,7 +207,7 @@ const userController = {
       // Retrieve the user profile from the database
       const sqlStatement = 'SELECT * FROM `user` WHERE id=?';
   
-      dbconnection.getConnection((err, connection) => {
+      pool.getConnection((err, connection) => {
         if (err) {
           // Handle connection error
           return next({
