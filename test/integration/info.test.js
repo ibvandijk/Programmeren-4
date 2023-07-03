@@ -24,7 +24,7 @@ const CLEAR_DB = CLEAR_MEAL_TABLE + CLEAR_PARTICIPANTS_TABLE + CLEAR_USERS_TABLE
 // INSERT USER
 const INSERT_USER =
 	'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `phoneNumber`, `street`, `city` ) VALUES' +
-	'(1, "John", "Doe", "johndoe@example.com", "Password1!", "123456789", "123 Street", "City");';
+	'(1, "John", "Doe", "johndoe@example.com", "secret", "123456789", "123 Street", "City");';
 
 describe('UC-101 Inloggen', () => {
 	beforeEach((done) => {
@@ -53,11 +53,11 @@ describe('UC-101 Inloggen', () => {
 	it('TC-101-1 Valid login credentials', (done) => {
 		const loginData = {
 			emailAddress: 'johndoe@example.com',
-			password: 'Password1!'
+			password: 'secret'
 		};
 
 		chai.request(server)
-			.post('/api/login')
+			.post(`/api/login`)
 			.send(loginData)
 			.end((err, res) => {
 				res.should.be.an('object');
@@ -84,7 +84,7 @@ describe('UC-101 Inloggen', () => {
 		};
 
 		chai.request(server)
-			.post('/api/login')
+			.post(`/api/login`)
 			.send(loginData)
 			.end((err, res) => {
 				res.should.be.an('object');
@@ -103,7 +103,7 @@ describe('UC-101 Inloggen', () => {
 		};
 
 		chai.request(server)
-			.post('/api/login')
+			.post(`/api/login`)
 			.send(loginData)
 			.end((err, res) => {
 				res.should.be.an('object');
@@ -122,7 +122,7 @@ describe('UC-101 Inloggen', () => {
 		};
 
 		chai.request(server)
-			.post('/api/login')
+			.post(`/api/login`)
 			.send(loginData)
 			.end((err, res) => {
 				res.should.be.an('object');
