@@ -12,6 +12,7 @@ const authController = {
     logger.info('loginUser called');
 
     const { emailAdress, password } = req.body;
+    logger.info('loginUser req.body = ', req.body);
 
     // Check if emailAdress or password is undefined
     if (!emailAdress || !password) {
