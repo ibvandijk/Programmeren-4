@@ -58,14 +58,14 @@ const authController = {
           const token = jwt.sign({ userId: user.id }, jwtSecretKey);
 
           // Return the token to the client
-          return next({
+          res.status(200).json({
             status: 200,
             message: 'Successful login',
             result: {
               token,
               user
             }
-          });
+        });
         });
       } catch (error) {
         logger.error('Error during login:', error);
