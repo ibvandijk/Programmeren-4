@@ -168,7 +168,7 @@ const userController = {
           // Handle query execution error
           return next({
             status: 409,
-            message: 'Meal not created.'
+            message: 'internal server error'
           });
         }
   
@@ -182,6 +182,7 @@ const userController = {
   
         res.status(200).json({
           status: 200,
+          message: 'Users retrieved successfully',
           users: userList,
         });
       });
