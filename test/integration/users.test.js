@@ -431,7 +431,7 @@ describe('User Tests', () => {
     });
 
     it('TC-204-3 Gebruiker-ID bestaat', (done) => {
-      const userId = 1;
+      const userId = 99;
 
       chai.request(server)
         .get(`/api/user/${userId}`)
@@ -441,14 +441,14 @@ describe('User Tests', () => {
           let { status, message, data } = res.body;
           // Verify that the response status, message, and data are correct
           expect(status).to.equal(200);
-          expect(message).to.equal('User retrieved successfully');
+          expect(message).to.equal('User profile retrieved successfully');
           expect(data).to.be.an('object');
-          expect(data.firstName).to.equal('John');
-          expect(data.lastName).to.equal('Doe');
-          expect(data.emailAdress).to.equal('johndoe@example.com');
-          expect(data.phoneNumber).to.equal('123456789');
-          expect(data.street).to.equal('123 Street');
-          expect(data.city).to.equal('City');
+          expect(data.firstName).to.equal('first');
+          expect(data.lastName).to.equal('last');
+          expect(data.emailAdress).to.equal('name@server.nl');
+          expect(data.phoneNumber).to.equal('0000000000');
+          expect(data.street).to.equal('street');
+          expect(data.city).to.equal('city');
           done();
         });
     });
