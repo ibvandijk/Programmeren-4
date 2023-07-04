@@ -276,7 +276,7 @@ const userController = {
             logger.trace('Found', results.length, 'results');
             res.status(200).json({
               code: 200,
-              message: 'Get User profile',
+              message: 'User profile retrieved successfully',
               data: results[0]
             });
           }
