@@ -630,7 +630,6 @@ describe('User Tests', () => {
         .end((err, res) => {
           res.should.be.an('object');
           let { status, message, data } = res.body;
-          logger.error("err message: ", message, data)
           // Verify that the response status, message, and data are correct
           expect(status).to.equal(200);
           expect(message).to.equal('User updated successfully');
