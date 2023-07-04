@@ -61,8 +61,10 @@ const authController = {
           return next({
             status: 200,
             message: 'Successful login',
-            token,
-            user
+            result: {
+              token,
+              user
+            }
           });
         });
       } catch (error) {
