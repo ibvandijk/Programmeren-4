@@ -199,24 +199,26 @@ describe('User Tests', () => {
     it('TC-202-1 Toon alle gebruikers (minimaal 2)', (done) => {
       // Insert two users into the database
       const usersData1 ={
-          firstName: "John",
-          lastName: "Doe",
-          emailAdress: "johndoe9@test.com",
+          firstName: "Johnt",
+          lastName: "Doet",
+          emailAdress: "johndoet@test.com",
           password: "Password1!",
           phoneNumber: "1234567891",
           street: "123 Street",
           city: "City"
         };
         const usersData2 ={
-          firstName: "Jane",
-          lastName: "Smith",
-          emailAdress: "janesmith9@test.com",
+          firstName: "Janet",
+          lastName: "Smitht",
+          emailAdress: "janesmitht@test.com",
           password: "Password2!",
           phoneNumber: "1987654321",
           street: "456 Street",
           city: "Town"
         };
 
+      userController.createUser(usersData1, () => {
+        userController.createUser(usersData2, () => {
           chai.request(server)
             .get('/api/user')
             .set(
