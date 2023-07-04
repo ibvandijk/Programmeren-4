@@ -183,7 +183,7 @@ const userController = {
         res.status(200).json({
           status: 200,
           message: 'Users retrieved successfully',
-          users: userList,
+          data: userList,
         });
       });
     });
