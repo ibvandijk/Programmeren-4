@@ -62,6 +62,7 @@ describe('UC-101 Inloggen', () => {
 			.end((err, res) => {
 				res.should.be.an('object');
 				let { status, result } = res.body;
+                logger.error(res.body);
 				// Verify that the response status and result object are correct
 				expect(status).to.equal(200);
 				expect(result).to.be.an('object');
