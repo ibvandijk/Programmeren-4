@@ -619,7 +619,8 @@ describe('User Tests', () => {
         password: 'Password2!',
         phoneNumber: '1987654321',
         street: '456 Street',
-        city: 'Town'
+        city: 'Town',
+        isActive: '1'
       };
 
       chai.request(server)
