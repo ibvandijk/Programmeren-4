@@ -439,4 +439,95 @@ describe('CRUD Meals /api/meal', () => {
 	// ----- UC-304 end -----
 
 	// ----- UC-305 start -----
+	describe('UC-305 Verwijderen van maaltijden', () => {
+		beforeEach((done) => {
+		  logger.debug('beforeEach called');
+		  pool.getConnection(function (err, conn) {
+			if (err) throw err;
+			conn.query(
+			  'ALTER TABLE meal AUTO_INCREMENT = 1;',
+			  (error, result, field) => {
+				conn.query(
+				  'ALTER TABLE user AUTO_INCREMENT = 1;',
+				  function (error, result, fields) {
+					conn.query(
+					  CLEAR_DB + INSERT_USER + INSERT_MEAL,
+					  function (error, results, fields) {
+						conn.release();
+						if (error) throw error;
+						logger.debug('beforeEach done');
+						done();
+					  }
+					);
+				  }
+				);
+			  }
+			);
+		  });
+		});
+	
+		it('TC-305-1 Meal successfully deleted', (done) => {
+		  const mealId = 1;
+	
+		  chai.request(server)
+			.delete(`/api/meal/${mealId}`)
+			.set('authorization', 'Bearer ' + jwt.sign({ id: 1 }, jwtSecretKey))
+			.end((err, res) => {
+			  res.should.be.an('object');
+			  const { status, message } = res.body;
+			  // Verify that the response status and message are correct
+			  expect(status).to.equal(200);
+			  expect(message).to.equal('Meal successfully deleted.');
+			  done();
+			});
+		});
+	
+		it('TC-305-2 User not logged in', (done) => {
+		  const mealId = 1;
+	
+		  chai.request(server)
+			.delete(`/api/meal/${mealId}`)
+			.end((err, res) => {
+			  res.should.be.an('object');
+			  const { status, message } = res.body;
+			  // Verify that the response status and message are correct
+			  expect(status).to.equal(401);
+			  expect(message).to.equal('Authorization header missing!');
+			  done();
+			});
+		});
+	
+		it('TC-305-3 User is not the owner of the meal', (done) => {
+		  const mealId = 1;
+	
+		  chai.request(server)
+			.delete(`/api/meal/${mealId}`)
+			.set('authorization', 'Bearer ' + jwt.sign({ id: 2 }, jwtSecretKey))
+			.end((err, res) => {
+			  res.should.be.an('object');
+			  const { status, message } = res.body;
+			  // Verify that the response status and message are correct
+			  expect(status).to.equal(403);
+			  expect(message).to.equal('Unauthorized: You are not allowed to update this meal.');
+			  done();
+			});
+		});
+	
+		it('TC-305-4 Meal does not exist', (done) => {
+		  const mealId = 999;
+	
+		  chai.request(server)
+			.delete(`/api/meal/${mealId}`)
+			.set('authorization', 'Bearer ' + jwt.sign({ id: 1 }, jwtSecretKey))
+			.end((err, res) => {
+			  res.should.be.an('object');
+			  const { status, message } = res.body;
+			  // Verify that the response status and message are correct
+			  expect(status).to.equal(404);
+			  expect(message).to.equal(`Meal with ID: ${mealId} not found!`);
+			  done();
+			});
+		});
+	  });
+	  // ----- UC-305 end -----
 });
