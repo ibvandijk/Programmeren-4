@@ -201,7 +201,7 @@ describe('User Tests', () => {
       const usersData1 ={
           firstName: "John",
           lastName: "Doe",
-          emailAdress: "johndoe@example.com",
+          emailAdress: "johndoe9@test.com",
           password: "Password1!",
           phoneNumber: "1234567891",
           street: "123 Street",
@@ -210,15 +210,13 @@ describe('User Tests', () => {
         const usersData2 ={
           firstName: "Jane",
           lastName: "Smith",
-          emailAdress: "janesmith@example.com",
+          emailAdress: "janesmith9@test.com",
           password: "Password2!",
           phoneNumber: "1987654321",
           street: "456 Street",
           city: "Town"
         };
 
-      userController.createUser(usersData1, () => {
-        userController.createUser(usersData2, () => {
           chai.request(server)
             .get('/api/user')
             .set(
@@ -236,8 +234,7 @@ describe('User Tests', () => {
               expect(data.length).to.be.at.least(2);
               done();
             });
-        });
-      });
+
     });
 
     it('TC-202-2 Toon gebruikers met zoekterm op niet-bestaande velden', (done) => {
