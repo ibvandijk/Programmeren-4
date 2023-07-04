@@ -457,7 +457,6 @@ describe('User Tests', () => {
 
   // UC-205 Updaten van usergegevens
   describe('UC-205 Updaten van usergegevens', () => {
-    let token = jwt.sign({ userId: 99 }, jwtSecretKey);
 
     beforeEach((done) => {
         logger.debug('beforeEach called');
@@ -479,6 +478,9 @@ describe('User Tests', () => {
           );
         });
       });
+
+    let token = jwt.sign({ userId: 99 }, jwtSecretKey);
+
 
     it('TC-205-1 Verplicht veld "emailAdress" ontbreekt', (done) => {
       const userId = 99;
@@ -577,8 +579,8 @@ describe('User Tests', () => {
           res.should.be.an('object');
           let { status, message } = res.body;
           // Verify that the response status and error message are correct
-          expect(status).to.equal(404);
-          expect(message).to.equal('User not found');
+          expect(status).to.equal(403);
+          expect(message).to.equal('Forbidden: You are not the owner of this user');
           done();
         });
     });
@@ -603,7 +605,7 @@ describe('User Tests', () => {
           let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(401);
-          expect(message).to.equal('Unauthorized: Missing or invalid token');
+          expect(message).to.equal('Authorization header missing!');
           done();
         });
     });
