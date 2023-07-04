@@ -637,7 +637,7 @@ describe('User Tests', () => {
           expect(data.firstName).to.equal('Jane');
           expect(data.lastName).to.equal('Doe');
           expect(data.emailAdress).to.equal('janedoe@example.com');
-          expect(data.phoneNumber).to.equal('987654321');
+          expect(data.phoneNumber).to.equal('1987654321');
           expect(data.street).to.equal('456 Street');
           expect(data.city).to.equal('Town');
           done();
