@@ -587,7 +587,7 @@ describe('User Tests', () => {
     });
 
     it('TC-205-5 Niet ingelogd', (done) => {
-      const userId = 1;
+      const userId = 99;
       const updatedUserData = {
         firstName: 'John',
         lastName: 'Doe',
@@ -612,7 +612,7 @@ describe('User Tests', () => {
     });
 
     it('TC-205-6 Gebruiker succesvol gewijzigd', (done) => {
-      const userId = 1;
+      const userId = 99;
       const updatedUserData = {
         firstName: 'Jane',
         lastName: 'Doe',
