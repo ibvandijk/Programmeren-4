@@ -93,8 +93,8 @@ const userController = {
           if (err) {
             // If there is an error, release the connection and send a 409 status with an error message
             conn.release();
-            res.status(409).json({
-              status: 409,
+            res.status(403).json({
+              status: 403,
               message: `The email address: ${user.emailAdress} has already been taken!`,
             });
           } else {
