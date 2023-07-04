@@ -233,7 +233,7 @@ const userController = {
             // User profile found
             res.status(200).json({
               status: 200,
-              message: 'Get User profile',
+              message: 'User profile retrieved successfully',
               data: results[0]
             });
           } else {
