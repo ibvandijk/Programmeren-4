@@ -89,9 +89,9 @@ describe('CRUD Meals /api/meal', () => {
 				.send(mealData)
 				.end((err, res) => {
 					res.should.be.an('object');
-					const { statusCode, message } = res.body;
+					const { status, message } = res.body;
 					// Verify that the response status and error message are correct
-					expect(statusCode).to.equal(400);
+					expect(status).to.equal(400);
 					expect(message).to.equal('Missing field: description');
 					done();
 				});
@@ -110,9 +110,9 @@ describe('CRUD Meals /api/meal', () => {
 				.send(mealData)
 				.end((err, res) => {
 					res.should.be.an('object');
-					const { statusCode, message } = res.body;
+					const { status, message } = res.body;
 					// Verify that the response status and error message are correct
-					expect(statusCode).to.equal(401);
+					expect(status).to.equal(401);
 					expect(message).to.equal('Authorization header missing!');
 					done();
 				});
@@ -199,9 +199,9 @@ describe('CRUD Meals /api/meal', () => {
 				.send(updatedFields)
 				.end((err, res) => {
 					res.should.be.an('object');
-					const { statusCode, message } = res.body;
+					const { status, message } = res.body;
 					// Verify that the response status and error message are correct
-					expect(statusCode).to.equal(400);
+					expect(status).to.equal(400);
 					expect(message).to.equal('Missing field: maxAmountOfParticipants');
 					done();
 				});
@@ -218,9 +218,9 @@ describe('CRUD Meals /api/meal', () => {
 				.send(updatedFields)
 				.end((err, res) => {
 					res.should.be.an('object');
-					const { statusCode, message } = res.body;
+					const { status, message } = res.body;
 					// Verify that the response status and error message are correct
-					expect(statusCode).to.equal(401);
+					expect(status).to.equal(401);
 					expect(message).to.equal('Authorization header missing!');
 					done();
 				});
@@ -249,9 +249,9 @@ describe('CRUD Meals /api/meal', () => {
 				.send(updatedFields)
 				.end((err, res) => {
 					res.should.be.an('object');
-					const { statusCode, message } = res.body;
+					const { status, message } = res.body;
 					// Verify that the response status and error message are correct
-					expect(statusCode).to.equal(403);
+					expect(status).to.equal(403);
 					expect(message).to.equal('Unauthorized: You are not allowed to update this meal.');
 					done();
 				});
@@ -281,9 +281,9 @@ describe('CRUD Meals /api/meal', () => {
 				.send(updatedFields)
 				.end((err, res) => {
 					res.should.be.an('object');
-					const { statusCode, message } = res.body;
+					const { status, message } = res.body;
 					// Verify that the response status and error message are correct
-					expect(statusCode).to.equal(404);
+					expect(status).to.equal(404);
 					expect(message).to.equal(`Meal with ID ${mealId} not found`);
 					done();
 				});
@@ -411,9 +411,9 @@ describe('CRUD Meals /api/meal', () => {
 				.set('authorization', 'Bearer ' + jwt.sign({ id: 1 }, jwtSecretKey))
 				.end((err, res) => {
 					res.should.be.an('object');
-					const { statusCode, message } = res.body;
+					const { status, message } = res.body;
 					// Verify that the response status and error message are correct
-					expect(statusCode).to.equal(404);
+					expect(status).to.equal(404);
 					expect(message).to.equal('Meal with ID: 2 not found!');
 					done();
 				});
