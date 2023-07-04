@@ -275,7 +275,7 @@ const userController = {
           });
           }
           logger.error("this is the looked for user: ",results);
-          if (results) {
+          if (results.length > 0) {
             logger.trace('Found', results.length, 'results');
             res.status(200).json({
               status: 200,
