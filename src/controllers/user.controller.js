@@ -84,7 +84,7 @@ const userController = {
             message: 'Failed to get a database connection.'
         });
       }
-      
+
       // Insert user data into the 'user' table
       conn.query(
         'INSERT INTO user (firstName, lastName, street, city, phoneNumber, emailAdress, password) VALUES (?, ?, ?, ?, ?, ?, ?);',
@@ -232,14 +232,14 @@ const userController = {
           if (results.length > 0) {
             // User profile found
             res.status(200).json({
-              code: 200,
+              status: 200,
               message: 'Get User profile',
               data: results[0]
             });
           } else {
             // User profile not found
             res.status(404).json({
-              code: 404,
+              status: 404,
               message: 'User profile not found'
             });
           }
