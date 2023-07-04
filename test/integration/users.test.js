@@ -18,7 +18,7 @@ chai.should();
 chai.use(chaiHttp);
 
 // Clearing queries
-const CLEAR_USERS_TABLE = 'DELETE IGNORE FROM user;';
+const CLEAR_USERS_TABLE = 'DELETE IGNORE FROM `user`;';
 const INSERT_USER =
 	'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `phoneNumber`, `street`, `city` ) VALUES' +
 	'(1, "first", "last", "name@server.nl", "Password1!", "0000000000", "street", "city");';
