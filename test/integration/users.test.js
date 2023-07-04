@@ -19,7 +19,13 @@ chai.use(chaiHttp);
 
 // Clearing queries
 const CLEAR_USERS_TABLE = 'DELETE IGNORE FROM user;';
-const CLEAR_DB = CLEAR_USERS_TABLE;
+const INSERT_USER =
+	'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `phoneNumber`, `street`, `city` ) VALUES' +
+	'(1, "first", "last", "name@server.nl", "Password1!", "0000000000", "street", "city");';
+const INSERT_USER2 =
+	'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `phoneNumber`, `street`, `city` ) VALUES' +
+	'(2, "second", "secondlast", "secondname@server.nl", "Password1!", "0000000000", "secondstreet", "secondcity");';
+
 
 describe('User Tests', () => {
 
@@ -183,7 +189,7 @@ describe('User Tests', () => {
           'ALTER TABLE `user` AUTO_INCREMENT = 1;',
           function (error, result, fields) {
             conn.query(
-              CLEAR_USERS_TABLE,
+              CLEAR_USERS_TABLE + INSERT_USER + INSERT_USER2,
               function (error, results, fields) {
                 conn.release();
                 if (error) throw error;
@@ -197,43 +203,30 @@ describe('User Tests', () => {
     });
 
     it('TC-202-1 Toon alle gebruikers (minimaal 2)', (done) => {
-      // Insert two users into the database
-      const usersData = [
-        {
-          firstName: "John",
-          lastName: "Doe",
-          emailAdress: "johndoe5@example.com",
-          password: "Password1!",
-          phoneNumber: "1234567891",
-          street: "123 Street",
-          city: "City"
-        }
-      ];
-
-      userController.createUser(usersData[0])
-          chai.request(server)
-            .get('/api/user')
-            .set(
-                'authorization',
-                'Bearer ' + jwt.sign({ userId: 1 }, jwtSecretKey)
-            )
-            .end((err, res) => {
-              res.should.be.an('object');
-              let { status, message, data } = res.body;
-              // Verify that the response status, message, and data are correct
-              expect(status).to.equal(200);
-              expect(message).to.equal('Users retrieved successfully');
-              expect(data).to.be.an('array');
-              expect(data.length).to.be.at.least(2);
-              done();
-            });
+      chai.request(server)
+        .get('/api/user')
+        .set(
+            'authorization',
+            'Bearer ' + jwt.sign({ userId: 1 }, jwtSecretKey)
+        )
+        .end((err, res) => {
+            res.should.be.an('object');
+            let { status, message, data } = res.body;
+            // Verify that the response status, message, and data are correct
+            expect(status).to.equal(200);
+            expect(message).to.equal('Users retrieved successfully');
+            expect(data).to.be.an('array');
+            expect(data.length).to.be.at.least(2);
+            done();
+        });
     });
 
-    it('TC-202-2 Toon gebruikers met zoekterm op niet-bestaande velden', (done) => {
-      const searchTerm = 'invalidField';
+    it('TC-202-2 Toon gebruikers met zoekterm isActive', (done) => {
+      const searchTerm = 'isActive';
+      const searchField = '0';
 
       chai.request(server)
-        .get(`/api/user?search=${searchTerm}`)
+        .get(`/api/user?${searchTerm}=${searchField}`)
         .set(
             'authorization',
             'Bearer ' + jwt.sign({ userId: 1 }, jwtSecretKey)
@@ -245,13 +238,13 @@ describe('User Tests', () => {
           expect(status).to.equal(200);
           expect(message).to.equal('Users retrieved successfully');
           expect(data).to.be.an('array');
-          expect(data.length).to.equal(0);
+          expect(data.length).to.equal(2);
           done();
         });
     });
 
     it('TC-202-3 Toon gebruikers met gebruik van de zoekterm op het veld "isActive"=false', (done) => {
-      const searchTerm = 'isActive:false';
+      const searchTerm = 'isActive=false';
 
       chai.request(server)
         .get(`/api/user?search=${searchTerm}`)
@@ -295,11 +288,11 @@ describe('User Tests', () => {
     });
 
     it('TC-202-5 Toon gebruikers met zoektermen op bestaande velden (max op 2 velden filteren)', (done) => {
-      const searchTerm1 = 'firstName:John';
-      const searchTerm2 = 'lastName:Doe';
+      const searchTerm1 = 'firstName=John';
+      const searchTerm2 = 'lastName=Doe';
 
       chai.request(server)
-        .get(`/api/user?search=${searchTerm1}&search=${searchTerm2}`)
+        .get(`/api/user?${searchTerm1}&${searchTerm2}`)
         .set(
                 'authorization',
                 'Bearer ' + jwt.sign({ userId: 1 }, jwtSecretKey)
