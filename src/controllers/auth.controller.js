@@ -11,11 +11,11 @@ const authController = {
   loginUser: (req, res, next) => {
     logger.info('loginUser called');
 
-    const { emailAdress, password } = req.body;
+    const { emailAddress, password } = req.body;
     logger.error('testing loginUser req.body = ', req.body);
 
     // Check if emailAdress or password is undefined
-    if (!emailAdress || !password) {
+    if (!emailAddress || !password) {
       return next({
         status: 400,
         message: 'emailAdress and password are required'
