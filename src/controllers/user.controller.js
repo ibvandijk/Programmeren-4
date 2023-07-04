@@ -112,6 +112,7 @@ const userController = {
                 // Send a 201 status with the inserted user as a response
                 res.status(201).json({
                   status: 201,
+                  message: `User successfully registered`,
                   result: user,
                 });
               }
