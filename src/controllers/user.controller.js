@@ -248,6 +248,7 @@ const userController = {
     });
   },
   
+  // UC-204 Opvragen van usergegevens bij ID
   getUserProfileById: (req, res) => {
     logger.info('getUserProfileById called');
     logger.trace('Show user with user id', req.params.userId);
@@ -268,17 +269,23 @@ const userController = {
           if (err) {
             // Handle query execution error
             return next({
-              status: 409,
-              message: 'Meal not created.'
+              status: 404,
+              message: 'User not found'
           });
           }
-          if (results) {
+          if (results > 0) {
             logger.trace('Found', results.length, 'results');
             res.status(200).json({
-              code: 200,
+              status: 200,
               message: 'User profile retrieved successfully',
               data: results[0]
             });
+          }
+          else {
+            return next({
+              status: 404,
+              message: 'User not found'
+          });
           }
         });
         pool.releaseConnection(conn);
@@ -416,14 +423,6 @@ const userController = {
       }
     });
   },
-
-  updateUser: (req, res) => {
-    logger.info('updateUser called');
-
-    // Update user from userId
-    logger.info('Update user')
-  },
-  
 }
 
 module.exports = userController;
