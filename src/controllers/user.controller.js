@@ -4,6 +4,7 @@ const assert = require('assert');
 const pool = require('../util/mysql-db');
 const jwt = require('jsonwebtoken');
 const validate = require('../util/validate');
+const { error } = require('console');
 
 const jwtSecretKey = require('../config/config.js').jwtSecretKey;
 
@@ -273,7 +274,8 @@ const userController = {
               message: 'User not found'
           });
           }
-          if (results > 0) {
+          logger.error("this is the looked for user: ",results);
+          if (results) {
             logger.trace('Found', results.length, 'results');
             res.status(200).json({
               status: 200,
