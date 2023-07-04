@@ -49,7 +49,7 @@ app.use('*', (req, res) => {
 app.use((err, req, res, next) => {
   logger.error(err.status, err.message);
   res.status(err.status).json({
-    statusCode: err.status || 500,
+    status: err.status || 500,
     message: err.message || 'Internal server error', 
     data: err.data || {}
   });
