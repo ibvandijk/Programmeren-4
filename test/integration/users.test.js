@@ -157,7 +157,6 @@ describe('User Tests', () => {
         .end((err, res) => {
           res.should.be.an('object');
           let { status, message, result } = res.body;
-          logger.error("test body message: ", message);
 
           expect(status).to.equal(201);
           expect(message).to.equal('User successfully registered');
@@ -174,142 +173,142 @@ describe('User Tests', () => {
   });
   // ------ UC-201 Registreren -----
 
-//   // UC-202 Opvragen van overzicht van users
-//   describe('UC-202 Opvragen van overzicht van users', () => {
-//     beforeEach((done) => {
-//       logger.debug('beforeEach called');
-//       pool.getConnection(function (err, conn) {
-//         if (err) throw err;
-//         conn.query(
-//           'ALTER TABLE `user` AUTO_INCREMENT = 1;',
-//           function (error, result, fields) {
-//             conn.query(
-//               CLEAR_USERS_TABLE,
-//               function (error, results, fields) {
-//                 conn.release();
-//                 if (error) throw error;
-//                 logger.debug('beforeEach done');
-//                 done();
-//               }
-//             );
-//           }
-//         );
-//       });
-//     });
+  // UC-202 Opvragen van overzicht van users
+  describe('UC-202 Opvragen van overzicht van users', () => {
+    beforeEach((done) => {
+      logger.debug('beforeEach called');
+      pool.getConnection(function (err, conn) {
+        if (err) throw err;
+        conn.query(
+          'ALTER TABLE `user` AUTO_INCREMENT = 1;',
+          function (error, result, fields) {
+            conn.query(
+              CLEAR_USERS_TABLE,
+              function (error, results, fields) {
+                conn.release();
+                if (error) throw error;
+                logger.debug('beforeEach done');
+                done();
+              }
+            );
+          }
+        );
+      });
+    });
 
-//     it('TC-202-1 Toon alle gebruikers (minimaal 2)', (done) => {
-//       // Insert two users into the database
-//       const usersData = [
-//         {
-//           firstName: 'John',
-//           lastName: 'Doe',
-//           emailAdress: 'johndoe@example.com',
-//           password: 'Password1!',
-//           phoneNumber: '1234567891',
-//           street: '123 Street',
-//           city: 'City'
-//         },
-//         {
-//           firstName: 'Jane',
-//           lastName: 'Smith',
-//           emailAdress: 'janesmith@example.com',
-//           password: 'Password2!',
-//           phoneNumber: '1987654321',
-//           street: '456 Street',
-//           city: 'Town'
-//         }
-//       ];
+    it('TC-202-1 Toon alle gebruikers (minimaal 2)', (done) => {
+      // Insert two users into the database
+      const usersData = [
+        {
+          firstName: 'John',
+          lastName: 'Doe',
+          emailAdress: 'johndoe@example.com',
+          password: 'Password1!',
+          phoneNumber: '1234567891',
+          street: '123 Street',
+          city: 'City'
+        },
+        {
+          firstName: 'Jane',
+          lastName: 'Smith',
+          emailAdress: 'janesmith@example.com',
+          password: 'Password2!',
+          phoneNumber: '1987654321',
+          street: '456 Street',
+          city: 'Town'
+        }
+      ];
 
-//       userController.createUser(usersData[0], () => {
-//         userController.createUser(usersData[1], () => {
-//           chai.request(server)
-//             .get('/api/user')
-//             .end((err, res) => {
-//               res.should.be.an('object');
-//               let { status, message, data } = res.body;
-//               // Verify that the response status, message, and data are correct
-//               expect(status).to.equal(200);
-//               expect(message).to.equal('Users retrieved successfully');
-//               expect(data).to.be.an('array');
-//               expect(data.length).to.be.at.least(2);
-//               done();
-//             });
-//         });
-//       });
-//     });
+      userController.createUser(usersData[0], () => {
+        userController.createUser(usersData[1], () => {
+          chai.request(server)
+            .get('/api/user')
+            .end((err, res) => {
+              res.should.be.an('object');
+              let { status, message, data } = res.body;
+              // Verify that the response status, message, and data are correct
+              expect(status).to.equal(200);
+              expect(message).to.equal('Users retrieved successfully');
+              expect(data).to.be.an('array');
+              expect(data.length).to.be.at.least(2);
+              done();
+            });
+        });
+      });
+    });
 
-//     it('TC-202-2 Toon gebruikers met zoekterm op niet-bestaande velden', (done) => {
-//       const searchTerm = 'invalidField';
+    it('TC-202-2 Toon gebruikers met zoekterm op niet-bestaande velden', (done) => {
+      const searchTerm = 'invalidField';
 
-//       chai.request(server)
-//         .get(`/api/user?search=${searchTerm}`)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message, data } = res.body;
-//           // Verify that the response status, message, and data are correct
-//           expect(status).to.equal(200);
-//           expect(message).to.equal('Users retrieved successfully');
-//           expect(data).to.be.an('array');
-//           expect(data.length).to.equal(0);
-//           done();
-//         });
-//     });
+      chai.request(server)
+        .get(`/api/user?search=${searchTerm}`)
+        .end((err, res) => {
+          res.should.be.an('object');
+          let { status, message, data } = res.body;
+          // Verify that the response status, message, and data are correct
+          expect(status).to.equal(200);
+          expect(message).to.equal('Users retrieved successfully');
+          expect(data).to.be.an('array');
+          expect(data.length).to.equal(0);
+          done();
+        });
+    });
 
-//     it('TC-202-3 Toon gebruikers met gebruik van de zoekterm op het veld "isActive"=false', (done) => {
-//       const searchTerm = 'isActive:false';
+    it('TC-202-3 Toon gebruikers met gebruik van de zoekterm op het veld "isActive"=false', (done) => {
+      const searchTerm = 'isActive:false';
 
-//       chai.request(server)
-//         .get(`/api/user?search=${searchTerm}`)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message, data } = res.body;
-//           // Verify that the response status, message, and data are correct
-//           expect(status).to.equal(200);
-//           expect(message).to.equal('Users retrieved successfully');
-//           expect(data).to.be.an('array');
-//           // Assuming there are no inactive users in the database
-//           expect(data.length).to.equal(0);
-//           done();
-//         });
-//     });
+      chai.request(server)
+        .get(`/api/user?search=${searchTerm}`)
+        .end((err, res) => {
+          res.should.be.an('object');
+          let { status, message, data } = res.body;
+          // Verify that the response status, message, and data are correct
+          expect(status).to.equal(200);
+          expect(message).to.equal('Users retrieved successfully');
+          expect(data).to.be.an('array');
+          // Assuming there are no inactive users in the database
+          expect(data.length).to.equal(0);
+          done();
+        });
+    });
 
-//     it('TC-202-4 Toon gebruikers met gebruik van de zoekterm op het veld "isActive"=true', (done) => {
-//       const searchTerm = 'isActive:true';
+    it('TC-202-4 Toon gebruikers met gebruik van de zoekterm op het veld "isActive"=true', (done) => {
+      const searchTerm = 'isActive:true';
 
-//       chai.request(server)
-//         .get(`/api/user?search=${searchTerm}`)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message, data } = res.body;
-//           // Verify that the response status, message, and data are correct
-//           expect(status).to.equal(200);
-//           expect(message).to.equal('Users retrieved successfully');
-//           expect(data).to.be.an('array');
-//           // Assuming there are no active users in the database
-//           expect(data.length).to.equal(0);
-//           done();
-//         });
-//     });
+      chai.request(server)
+        .get(`/api/user?search=${searchTerm}`)
+        .end((err, res) => {
+          res.should.be.an('object');
+          let { status, message, data } = res.body;
+          // Verify that the response status, message, and data are correct
+          expect(status).to.equal(200);
+          expect(message).to.equal('Users retrieved successfully');
+          expect(data).to.be.an('array');
+          // Assuming there are no active users in the database
+          expect(data.length).to.equal(0);
+          done();
+        });
+    });
 
-//     it('TC-202-5 Toon gebruikers met zoektermen op bestaande velden (max op 2 velden filteren)', (done) => {
-//       const searchTerm1 = 'firstName:John';
-//       const searchTerm2 = 'lastName:Doe';
+    it('TC-202-5 Toon gebruikers met zoektermen op bestaande velden (max op 2 velden filteren)', (done) => {
+      const searchTerm1 = 'firstName:John';
+      const searchTerm2 = 'lastName:Doe';
 
-//       chai.request(server)
-//         .get(`/api/user?search=${searchTerm1}&search=${searchTerm2}`)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message, data } = res.body;
-//           // Verify that the response status, message, and data are correct
-//           expect(status).to.equal(200);
-//           expect(message).to.equal('Users retrieved successfully');
-//           expect(data).to.be.an('array');
-//           expect(data.length).to.be.at.least(1);
-//           done();
-//         });
-//     });
-//   });
-//   // ------ UC-202 Opvragen van overzicht van users -----
+      chai.request(server)
+        .get(`/api/user?search=${searchTerm1}&search=${searchTerm2}`)
+        .end((err, res) => {
+          res.should.be.an('object');
+          let { status, message, data } = res.body;
+          // Verify that the response status, message, and data are correct
+          expect(status).to.equal(200);
+          expect(message).to.equal('Users retrieved successfully');
+          expect(data).to.be.an('array');
+          expect(data.length).to.be.at.least(1);
+          done();
+        });
+    });
+  });
+  // ------ UC-202 Opvragen van overzicht van users -----
 
 //   // UC-203 Opvragen van gebruikersprofiel
 //   describe('UC-203 Opvragen van gebruikersprofiel', () => {
