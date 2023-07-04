@@ -198,27 +198,29 @@ describe('User Tests', () => {
 
     it('TC-202-1 Toon alle gebruikers (minimaal 2)', (done) => {
       // Insert two users into the database
-      const usersData1 ={
-          firstName: "Johnt",
-          lastName: "Doet",
-          emailAdress: "johndoet@test.com",
+      const usersData = [
+        {
+          firstName: "John",
+          lastName: "Doe",
+          emailAdress: "johndoe5@example.com",
           password: "Password1!",
           phoneNumber: "1234567891",
           street: "123 Street",
           city: "City"
-        };
-        const usersData2 ={
-          firstName: "Janet",
-          lastName: "Smitht",
-          emailAdress: "janesmitht@test.com",
+        },
+        {
+          firstName: "Jane",
+          lastName: "Smith",
+          emailAdress: "janesmith5@example.com",
           password: "Password2!",
           phoneNumber: "1987654321",
           street: "456 Street",
           city: "Town"
-        };
+        }
+      ];
 
-      userController.createUser(usersData1, () => {
-        userController.createUser(usersData2, () => {
+      userController.createUser(usersData[0], () => {
+        userController.createUser(usersData[1], () => {
           chai.request(server)
             .get('/api/user')
             .set(
@@ -228,7 +230,6 @@ describe('User Tests', () => {
             .end((err, res) => {
               res.should.be.an('object');
               let { status, message, data } = res.body;
-              logger.error("datareadout: ", data);
               // Verify that the response status, message, and data are correct
               expect(status).to.equal(200);
               expect(message).to.equal('Users retrieved successfully');
@@ -236,7 +237,8 @@ describe('User Tests', () => {
               expect(data.length).to.be.at.least(2);
               done();
             });
-
+        });
+      });
     });
 
     it('TC-202-2 Toon gebruikers met zoekterm op niet-bestaande velden', (done) => {
