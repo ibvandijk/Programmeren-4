@@ -311,83 +311,67 @@ describe('User Tests', () => {
   });
   // ------ UC-202 Opvragen van overzicht van users -----
 
-//   // UC-203 Opvragen van gebruikersprofiel
-//   describe('UC-203 Opvragen van gebruikersprofiel', () => {
-//     let token = '';
+  // UC-203 Opvragen van gebruikersprofiel
+  describe('UC-203 Opvragen van gebruikersprofiel', () => {
+    let token = jwt.sign({ userId: 99 }, jwtSecretKey);
 
-//     beforeEach((done) => {
-//       logger.debug('beforeEach called');
-//       pool.getConnection(function (err, conn) {
-//         if (err) throw err;
-//         conn.query(
-//           'ALTER TABLE `user` AUTO_INCREMENT = 1;',
-//           function (error, result, fields) {
-//             conn.query(
-//               CLEAR_USERS_TABLE,
-//               function (error, results, fields) {
-//                 // Create a user for testing
-//                 const userData = {
-//                   firstName: 'John',
-//                   lastName: 'Doe',
-//                   emailAdress: 'johndoe@example.com',
-//                   password: 'Password1!',
-//                   phoneNumber: '123456789',
-//                   street: '123 Street',
-//                   city: 'City'
-//                 };
+    beforeEach((done) => {
+        logger.debug('beforeEach called');
+        pool.getConnection(function (err, conn) {
+          if (err) throw err;
+          conn.query(
+            'ALTER TABLE `user` AUTO_INCREMENT = 1;',
+            function (error, result, fields) {
+              conn.query(
+                CLEAR_USERS_TABLE + INSERT_USER + INSERT_USER2,
+                function (error, results, fields) {
+                  conn.release();
+                  if (error) throw error;
+                  logger.debug('beforeEach done');
+                  done();
+                }
+              );
+            }
+          );
+        });
+      });
 
-//                 userController.createUser(userData, (error, result) => {
-//                   // Generate a token for the user
-//                   token = jwt.sign({ userId: result.insertId }, jwtSecretKey);
+    it('TC-203-1 Ongeldig token', (done) => {
+      chai.request(server)
+        .get('/api/user/profile')
+        .set('Authorization', 'Bearer invalidtoken')
+        .end((err, res) => {
+          res.should.be.an('object');
+          let { status, message } = res.body;
+          // Verify that the response status and error message are correct
+          expect(status).to.equal(401);
+          expect(message).to.equal('Invalid token');
+          done();
+        });
+    });
 
-//                   conn.release();
-//                   if (error) throw error;
-//                   logger.debug('beforeEach done');
-//                   done();
-//                 });
-//               }
-//             );
-//           }
-//         );
-//       });
-//     });
-
-//     it('TC-203-1 Ongeldig token', (done) => {
-//       chai.request(server)
-//         .get('/api/user/profile')
-//         .set('Authorization', 'Bearer invalidtoken')
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message } = res.body;
-//           // Verify that the response status and error message are correct
-//           expect(status).to.equal(401);
-//           expect(message).to.equal('Invalid token');
-//           done();
-//         });
-//     });
-
-//     it('TC-203-2 Gebruiker is ingelogd met geldig token', (done) => {
-//       chai.request(server)
-//         .get('/api/user/profile')
-//         .set('Authorization', `Bearer ${token}`)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message, data } = res.body;
-//           // Verify that the response status, message, and data are correct
-//           expect(status).to.equal(200);
-//           expect(message).to.equal('User profile retrieved successfully');
-//           expect(data).to.be.an('object');
-//           expect(data.firstName).to.equal('John');
-//           expect(data.lastName).to.equal('Doe');
-//           expect(data.emailAdress).to.equal('johndoe@example.com');
-//           expect(data.phoneNumber).to.equal('123456789');
-//           expect(data.street).to.equal('123 Street');
-//           expect(data.city).to.equal('City');
-//           done();
-//         });
-//     });
-//   });
-//   // ----- UC-203 Opvragen van gebruikersprofiel -----
+    it('TC-203-2 Gebruiker is ingelogd met geldig token', (done) => {
+      chai.request(server)
+        .get('/api/user/profile')
+        .set('Authorization', `Bearer ${token}`)
+        .end((err, res) => {
+          res.should.be.an('object');
+          let { status, message, data } = res.body;
+          // Verify that the response status, message, and data are correct
+          expect(status).to.equal(200);
+          expect(message).to.equal('User profile retrieved successfully');
+          expect(data).to.be.an('object');
+          expect(data.firstName).to.equal('first');
+          expect(data.lastName).to.equal('last');
+          expect(data.emailAdress).to.equal('name@server.nl');
+          expect(data.phoneNumber).to.equal('0000000000');
+          expect(data.street).to.equal('street');
+          expect(data.city).to.equal('city');
+          done();
+        });
+    });
+  });
+  // ----- UC-203 Opvragen van gebruikersprofiel -----
 
 //   // UC-204 Opvragen van usergegevens bij ID
 //   describe('UC-204 Opvragen van usergegevens bij ID', () => {
