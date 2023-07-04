@@ -18,13 +18,13 @@ chai.should();
 chai.use(chaiHttp);
 
 // Clearing queries
-const CLEAR_USERS_TABLE = 'DELETE IGNORE FROM `user`;';
+const CLEAR_USERS_TABLE = 'DELETE IGNORE FROM user;';
 const INSERT_USER =
 	'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `phoneNumber`, `street`, `city` ) VALUES' +
-	'(1, "first", "last", "name@server.nl", "Password1!", "0000000000", "street", "city");';
+	'(99, "first", "last", "name@server.nl", "Password1!", "0000000000", "street", "city");';
 const INSERT_USER2 =
 	'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `phoneNumber`, `street`, `city` ) VALUES' +
-	'(2, "second", "secondlast", "secondname@server.nl", "Password1!", "0000000000", "secondstreet", "secondcity");';
+	'(100, "second", "secondlast", "secondname@server.nl", "Password1!", "0000000000", "secondstreet", "secondcity");';
 
 
 describe('User Tests', () => {
@@ -182,29 +182,24 @@ describe('User Tests', () => {
   // UC-202 Opvragen van overzicht van users
   describe('UC-202 Opvragen van overzicht van users', () => {
     beforeEach((done) => {
-        logger.debug('beforeEach called');
-        pool.getConnection(function (err, conn) {
-            if (err) { throw err };
+      logger.debug('beforeEach called');
+      pool.getConnection(function (err, conn) {
+        if (err) throw err;
+        conn.query(
+          'ALTER TABLE `user` AUTO_INCREMENT = 1;',
+          function (error, result, fields) {
             conn.query(
-                'ALTER TABLE `meal` AUTO_INCREMENT = 1;',
-                (error, result, field) => {
-                    conn.query(
-                        'ALTER TABLE `user` AUTO_INCREMENT = 1;',
-                        function (error, result, fields) {
-                            conn.query(
-                                CLEAR_USERS_TABLE + INSERT_USER + INSERT_USER2,
-                                function (error, results, fields) {
-                                    conn.release();
-                                    if (error) throw error;
-                                    logger.debug('beforeEach done');
-                                    done();
-                                }
-                            );
-                        }
-                    );
-                }
+              CLEAR_USERS_TABLE + INSERT_USER + INSERT_USER2,
+              function (error, results, fields) {
+                conn.release();
+                if (error) throw error;
+                logger.debug('beforeEach done');
+                done();
+              }
             );
-        });
+          }
+        );
+      });
     });
 
     it('TC-202-1 Toon alle gebruikers (minimaal 2)', (done) => {
