@@ -8,7 +8,7 @@ const validate = require('../util/validate');
 const jwtSecretKey = require('../config/config.js').jwtSecretKey;
 
 const userController = {
-  validateUser: (req, res) => {
+  validateUser: (req, res, next) => {
     logger.info('validateUser called');
     let user = req.body;
 
