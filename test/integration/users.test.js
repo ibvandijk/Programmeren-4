@@ -1,824 +1,787 @@
-process.env.DB_DATABASE = process.env.DB_DATABASE || 'shareameal';
+process.env.DB_DATABASE = process.env.DB_DATABASE || 'share-a-meal-testdb';
 process.env.LOGLEVEL = 'warn';
 
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const server = require('../../app');
+const server = require('../../index');
 const assert = require('assert');
 require('dotenv').config();
+const dbconnection = require('../../database/dbconnection');
 const jwt = require('jsonwebtoken');
-const jwtSecretKey = require('../../src/config/config').jwtSecretKey;
-const logger = require('../../src/util/utils').logger;
-const pool = require('../../src/util/mysql-db');
-const userController = require('../../src/controllers/user.controller');
-const { log } = require('console');
-const expect = chai.expect;
+const { jwtSecretKey, logger } = require('../../src/config/config');
 
 chai.should();
 chai.use(chaiHttp);
 
-// Clearing queries
-const CLEAR_USERS_TABLE = 'DELETE IGNORE FROM user;';
-const CLEAR_DB = CLEAR_USERS_TABLE;
-
-describe('User Tests', () => {
-
-  // UC-201 Registreren
-  describe('UC-201 Registreren', () => {
-    beforeEach((done) => {
-      logger.debug('beforeEach called');
-      pool.getConnection(function (err, conn) {
-        if (err) throw err;
-        conn.query(
-          'ALTER TABLE `user` AUTO_INCREMENT = 1;',
-          function (error, result, fields) {
-            conn.query(
-              CLEAR_USERS_TABLE,
-              function (error, results, fields) {
-                conn.release();
-                if (error) throw error;
-                logger.debug('beforeEach done');
-                done();
-              }
-            );
-          }
-        );
-      });
-    });
-
-    it('TC-201-1 Verplicht veld ontbreekt', (done) => {
-      const userData = {
-        firstName: 'John',
-        lastName: 'Doe',
-        password: 'Password1!',
-        phoneNumber: '123456789',
-        street: '123 Street',
-        city: 'City'
-      };
-
-      chai.request(server)
-        .post('/api/user')
-        .send(userData)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message } = res.body;
-          expect(status).to.equal(400);
-          expect(message).to.equal('Missing field: emailAdress');
-          done();
-        });
-    });
-
-    it('TC-201-2 Niet-valide emailadres', (done) => {
-      const userData = {
-        firstName: 'John',
-        lastName: 'Doe',
-        emailAdress: 'johndoexample.com',
-        password: 'Password1!',
-        phoneNumber: '123456789',
-        street: '123 Street',
-        city: 'City'
-      };
-
-      chai.request(server)
-        .post('/api/user')
-        .send(userData)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message } = res.body;
-          // Verify that the response status and error message are correct
-          expect(status).to.equal(400);
-          expect(message).to.equal('emailAdress is not valid');
-          done();
-        });
-    });
-
-    it('TC-201-3 Niet-valide wachtwoord', (done) => {
-      const userData = {
-        firstName: 'John',
-        lastName: 'Doe',
-        emailAdress: 'johndoe@example.com',
-        password: 'password1',
-        phoneNumber: '123456789',
-        street: '123 Street',
-        city: 'City'
-      };
-
-      chai.request(server)
-        .post('/api/user')
-        .send(userData)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message } = res.body;
-          // Verify that the response status and error message are correct
-          expect(status).to.equal(400);
-          expect(message).to.equal('password is not valid');
-          done();
-        });
-    });
-
-    it('TC-201-4 Gebruiker bestaat al', (done) => {
-      const userData = {
-        firstName: 'John',
-        lastName: 'Doe',
-        emailAdress: 'johndoe@example.com',
-        password: 'Password1!',
-        phoneNumber: '1234567891',
-        street: '123 Street',
-        city: 'City'
-      };
-
-      chai.request(server)
-        .post('/api/user')
-        .send(userData)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message } = res.body;
-          // Verify that the response status and error message are correct
-          expect(status).to.equal(403);
-          expect(message).to.equal(`The email address: ${userData.emailAdress} has already been taken!`);
-          done();
-        });
-    });
-
-    it('TC-201-5 Gebruiker succesvol geregistreerd', (done) => {
-      const userData = {
-        firstName: 'John',
-        lastName: 'Doe',
-        emailAdress: 'johndoe@test.com',
-        password: 'Password1!',
-        phoneNumber: '1234567891',
-        street: '123 Street',
-        city: 'City'
-      };
-
-      chai.request(server)
-        .post('/api/user')
-        .send(userData)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message, result } = res.body;
-
-          expect(status).to.equal(201);
-          expect(message).to.equal('User successfully registered');
-          expect(result).to.be.an('object');
-          expect(result.firstName).to.equal(userData.firstName);
-          expect(result.lastName).to.equal(userData.lastName);
-          expect(result.emailAdress).to.equal(userData.emailAdress);
-          expect(result.phoneNumber).to.equal(userData.phoneNumber);
-          expect(result.street).to.equal(userData.street);
-          expect(result.city).to.equal(userData.city);
-          done();
-        });
-    });
-  });
-  // ------ UC-201 Registreren -----
-
-  // UC-202 Opvragen van overzicht van users
-  describe('UC-202 Opvragen van overzicht van users', () => {
-    beforeEach((done) => {
-      logger.debug('beforeEach called');
-      pool.getConnection(function (err, conn) {
-        if (err) throw err;
-        conn.query(
-          'ALTER TABLE `user` AUTO_INCREMENT = 1;',
-          function (error, result, fields) {
-            conn.query(
-              CLEAR_USERS_TABLE,
-              function (error, results, fields) {
-                conn.release();
-                if (error) throw error;
-                logger.debug('beforeEach done');
-                done();
-              }
-            );
-          }
-        );
-      });
-    });
-
-    it('TC-202-1 Toon alle gebruikers (minimaal 2)', (done) => {
-      // Insert two users into the database
-      const usersData = [
-        {
-          firstName: "John",
-          lastName: "Doe",
-          emailAdress: "johndoe5@example.com",
-          password: "Password1!",
-          phoneNumber: "1234567891",
-          street: "123 Street",
-          city: "City"
-        },
-        {
-          firstName: "Jane",
-          lastName: "Smith",
-          emailAdress: "janesmith5@example.com",
-          password: "Password2!",
-          phoneNumber: "1987654321",
-          street: "456 Street",
-          city: "Town"
-        }
-      ];
-
-      userController.createUser(usersData[0], () => {
-        userController.createUser(usersData[1], () => {
-          chai.request(server)
-            .get('/api/user')
-            .set(
-                'authorization',
-                'Bearer ' + jwt.sign({ userId: 1 }, jwtSecretKey)
-            )
-            .end((err, res) => {
-              res.should.be.an('object');
-              let { status, message, data } = res.body;
-              // Verify that the response status, message, and data are correct
-              expect(status).to.equal(200);
-              expect(message).to.equal('Users retrieved successfully');
-              expect(data).to.be.an('array');
-              expect(data.length).to.be.at.least(2);
-              done();
-            });
-        });
-      });
-    });
-
-    it('TC-202-2 Toon gebruikers met zoekterm op niet-bestaande velden', (done) => {
-      const searchTerm = 'invalidField';
-
-      chai.request(server)
-        .get(`/api/user?search=${searchTerm}`)
-        .set(
-            'authorization',
-            'Bearer ' + jwt.sign({ userId: 1 }, jwtSecretKey)
-        )
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message, data } = res.body;
-          // Verify that the response status, message, and data are correct
-          expect(status).to.equal(200);
-          expect(message).to.equal('Users retrieved successfully');
-          expect(data).to.be.an('array');
-          expect(data.length).to.equal(0);
-          done();
-        });
-    });
-
-    it('TC-202-3 Toon gebruikers met gebruik van de zoekterm op het veld "isActive"=false', (done) => {
-      const searchTerm = 'isActive:false';
-
-      chai.request(server)
-        .get(`/api/user?search=${searchTerm}`)
-        .set(
-            'authorization',
-            'Bearer ' + jwt.sign({ userId: 1 }, jwtSecretKey)
-        )
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message, data } = res.body;
-          // Verify that the response status, message, and data are correct
-          expect(status).to.equal(200);
-          expect(message).to.equal('Users retrieved successfully');
-          expect(data).to.be.an('array');
-          // Assuming there are no inactive users in the database
-          expect(data.length).to.equal(0);
-          done();
-        });
-    });
-
-    it('TC-202-4 Toon gebruikers met gebruik van de zoekterm op het veld "isActive"=true', (done) => {
-      const searchTerm = 'isActive:true';
-
-      chai.request(server)
-        .get(`/api/user?search=${searchTerm}`)
-        .set(
-            'authorization',
-            'Bearer ' + jwt.sign({ userId: 1 }, jwtSecretKey)
-        )
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message, data } = res.body;
-          // Verify that the response status, message, and data are correct
-          expect(status).to.equal(200);
-          expect(message).to.equal('Users retrieved successfully');
-          expect(data).to.be.an('array');
-          // Assuming there are no active users in the database
-          expect(data.length).to.equal(0);
-          done();
-        });
-    });
-
-    it('TC-202-5 Toon gebruikers met zoektermen op bestaande velden (max op 2 velden filteren)', (done) => {
-      const searchTerm1 = 'firstName:John';
-      const searchTerm2 = 'lastName:Doe';
-
-      chai.request(server)
-        .get(`/api/user?search=${searchTerm1}&search=${searchTerm2}`)
-        .set(
-                'authorization',
-                'Bearer ' + jwt.sign({ userId: 1 }, jwtSecretKey)
-            )
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message, data } = res.body;
-          // Verify that the response status, message, and data are correct
-          expect(status).to.equal(200);
-          expect(message).to.equal('Users retrieved successfully');
-          expect(data).to.be.an('array');
-          expect(data.length).to.be.at.least(1);
-          done();
-        });
-    });
-  });
-  // ------ UC-202 Opvragen van overzicht van users -----
-
-//   // UC-203 Opvragen van gebruikersprofiel
-//   describe('UC-203 Opvragen van gebruikersprofiel', () => {
-//     let token = '';
-
-//     beforeEach((done) => {
-//       logger.debug('beforeEach called');
-//       pool.getConnection(function (err, conn) {
-//         if (err) throw err;
-//         conn.query(
-//           'ALTER TABLE `user` AUTO_INCREMENT = 1;',
-//           function (error, result, fields) {
-//             conn.query(
-//               CLEAR_USERS_TABLE,
-//               function (error, results, fields) {
-//                 // Create a user for testing
-//                 const userData = {
-//                   firstName: 'John',
-//                   lastName: 'Doe',
-//                   emailAdress: 'johndoe@example.com',
-//                   password: 'Password1!',
-//                   phoneNumber: '123456789',
-//                   street: '123 Street',
-//                   city: 'City'
-//                 };
-
-//                 userController.createUser(userData, (error, result) => {
-//                   // Generate a token for the user
-//                   token = jwt.sign({ userId: result.insertId }, jwtSecretKey);
-
-//                   conn.release();
-//                   if (error) throw error;
-//                   logger.debug('beforeEach done');
-//                   done();
-//                 });
-//               }
-//             );
-//           }
-//         );
-//       });
-//     });
-
-//     it('TC-203-1 Ongeldig token', (done) => {
-//       chai.request(server)
-//         .get('/api/user/profile')
-//         .set('Authorization', 'Bearer invalidtoken')
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message } = res.body;
-//           // Verify that the response status and error message are correct
-//           expect(status).to.equal(401);
-//           expect(message).to.equal('Invalid token');
-//           done();
-//         });
-//     });
-
-//     it('TC-203-2 Gebruiker is ingelogd met geldig token', (done) => {
-//       chai.request(server)
-//         .get('/api/user/profile')
-//         .set('Authorization', `Bearer ${token}`)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message, data } = res.body;
-//           // Verify that the response status, message, and data are correct
-//           expect(status).to.equal(200);
-//           expect(message).to.equal('User profile retrieved successfully');
-//           expect(data).to.be.an('object');
-//           expect(data.firstName).to.equal('John');
-//           expect(data.lastName).to.equal('Doe');
-//           expect(data.emailAdress).to.equal('johndoe@example.com');
-//           expect(data.phoneNumber).to.equal('123456789');
-//           expect(data.street).to.equal('123 Street');
-//           expect(data.city).to.equal('City');
-//           done();
-//         });
-//     });
-//   });
-//   // ----- UC-203 Opvragen van gebruikersprofiel -----
-
-//   // UC-204 Opvragen van usergegevens bij ID
-//   describe('UC-204 Opvragen van usergegevens bij ID', () => {
-//     let token = '';
-
-//     beforeEach((done) => {
-//       logger.debug('beforeEach called');
-//       pool.getConnection(function (err, conn) {
-//         if (err) throw err;
-//         conn.query(
-//           'ALTER TABLE `user` AUTO_INCREMENT = 1;',
-//           function (error, result, fields) {
-//             conn.query(
-//               CLEAR_USERS_TABLE,
-//               function (error, results, fields) {
-//                 // Create a user for testing
-//                 const userData = {
-//                   firstName: 'John',
-//                   lastName: 'Doe',
-//                   emailAdress: 'johndoe@example.com',
-//                   password: 'Password1!',
-//                   phoneNumber: '123456789',
-//                   street: '123 Street',
-//                   city: 'City'
-//                 };
-
-//                 userController.createUser(userData, (error, result) => {
-//                   // Generate a token for the user
-//                   token = jwt.sign({ userId: result.insertId }, jwtSecretKey);
-
-//                   conn.release();
-//                   if (error) throw error;
-//                   logger.debug('beforeEach done');
-//                   done();
-//                 });
-//               }
-//             );
-//           }
-//         );
-//       });
-//     });
-
-//     it('TC-204-1 Ongeldig token', (done) => {
-//       const userId = 1;
-
-//       chai.request(server)
-//         .get(`/api/user/${userId}`)
-//         .set('Authorization', 'Bearer invalidtoken')
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message } = res.body;
-//           // Verify that the response status and error message are correct
-//           expect(status).to.equal(401);
-//           expect(message).to.equal('Invalid token');
-//           done();
-//         });
-//     });
-
-//     it('TC-204-2 Gebruiker-ID bestaat niet', (done) => {
-//       const userId = 999;
-
-//       chai.request(server)
-//         .get(`/api/user/${userId}`)
-//         .set('Authorization', `Bearer ${token}`)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message } = res.body;
-//           // Verify that the response status and error message are correct
-//           expect(status).to.equal(404);
-//           expect(message).to.equal('User not found');
-//           done();
-//         });
-//     });
-
-//     it('TC-204-3 Gebruiker-ID bestaat', (done) => {
-//       const userId = 1;
-
-//       chai.request(server)
-//         .get(`/api/user/${userId}`)
-//         .set('Authorization', `Bearer ${token}`)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message, data } = res.body;
-//           // Verify that the response status, message, and data are correct
-//           expect(status).to.equal(200);
-//           expect(message).to.equal('User retrieved successfully');
-//           expect(data).to.be.an('object');
-//           expect(data.firstName).to.equal('John');
-//           expect(data.lastName).to.equal('Doe');
-//           expect(data.emailAdress).to.equal('johndoe@example.com');
-//           expect(data.phoneNumber).to.equal('123456789');
-//           expect(data.street).to.equal('123 Street');
-//           expect(data.city).to.equal('City');
-//           done();
-//         });
-//     });
-//   });
-//   // ----- UC-204 Opvragen van usergegevens bij ID -----
-
-//   // UC-205 Updaten van usergegevens
-//   describe('UC-205 Updaten van usergegevens', () => {
-//     let token = '';
-
-//     beforeEach((done) => {
-//       logger.debug('beforeEach called');
-//       pool.getConnection(function (err, conn) {
-//         if (err) throw err;
-//         conn.query(
-//           'ALTER TABLE `user` AUTO_INCREMENT = 1;',
-//           function (error, result, fields) {
-//             conn.query(
-//               CLEAR_USERS_TABLE,
-//               function (error, results, fields) {
-//                 // Create a user for testing
-//                 const userData = {
-//                   firstName: 'John',
-//                   lastName: 'Doe',
-//                   emailAdress: 'johndoe@example.com',
-//                   password: 'Password1!',
-//                   phoneNumber: '123456789',
-//                   street: '123 Street',
-//                   city: 'City'
-//                 };
-
-//                 userController.createUser(userData, (error, result) => {
-//                   // Generate a token for the user
-//                   token = jwt.sign({ userId: result.insertId }, jwtSecretKey);
-
-//                   conn.release();
-//                   if (error) throw error;
-//                   logger.debug('beforeEach done');
-//                   done();
-//                 });
-//               }
-//             );
-//           }
-//         );
-//       });
-//     });
-
-//     it('TC-205-1 Verplicht veld "emailAdress" ontbreekt', (done) => {
-//       const userId = 1;
-//       const updatedUserData = {
-//         firstName: 'John',
-//         lastName: 'Doe',
-//         password: 'Password2!',
-//         phoneNumber: '987654321',
-//         street: '456 Street',
-//         city: 'Town'
-//       };
-
-//       chai.request(server)
-//         .put(`/api/user/${userId}`)
-//         .set('Authorization', `Bearer ${token}`)
-//         .send(updatedUserData)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message } = res.body;
-//           // Verify that the response status and error message are correct
-//           expect(status).to.equal(400);
-//           expect(message).to.equal('Email address is required');
-//           done();
-//         });
-//     });
-
-//     it('TC-205-2 De gebruiker is niet de eigenaar van de data', (done) => {
-//       const userId = 1;
-//       const updatedUserData = {
-//         firstName: 'John',
-//         lastName: 'Doe',
-//         emailAdress: 'johndoe@example.com',
-//         password: 'Password2!',
-//         phoneNumber: '987654321',
-//         street: '456 Street',
-//         city: 'Town'
-//       };
-
-//       // Generate a token for a different user
-//       const differentUserToken = jwt.sign({ userId: 999 }, jwtSecretKey);
-
-//       chai.request(server)
-//         .put(`/api/user/${userId}`)
-//         .set('Authorization', `Bearer ${differentUserToken}`)
-//         .send(updatedUserData)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message } = res.body;
-//           // Verify that the response status and error message are correct
-//           expect(status).to.equal(403);
-//           expect(message).to.equal('Forbidden: You are not the owner of this user');
-//           done();
-//         });
-//     });
-
-//     it('TC-205-3 Niet-valide telefoonnummer', (done) => {
-//       const userId = 1;
-//       const updatedUserData = {
-//         firstName: 'John',
-//         lastName: 'Doe',
-//         emailAdress: 'johndoe@example.com',
-//         password: 'Password2!',
-//         phoneNumber: '123',
-//         street: '456 Street',
-//         city: 'Town'
-//       };
-
-//       chai.request(server)
-//         .put(`/api/user/${userId}`)
-//         .set('Authorization', `Bearer ${token}`)
-//         .send(updatedUserData)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message } = res.body;
-//           // Verify that the response status and error message are correct
-//           expect(status).to.equal(400);
-//           expect(message).to.equal('Phone number is not valid');
-//           done();
-//         });
-//     });
-
-//     it('TC-205-4 Gebruiker bestaat niet', (done) => {
-//       const userId = 999;
-//       const updatedUserData = {
-//         firstName: 'John',
-//         lastName: 'Doe',
-//         emailAdress: 'johndoe@example.com',
-//         password: 'Password2!',
-//         phoneNumber: '987654321',
-//         street: '456 Street',
-//         city: 'Town'
-//       };
-
-//       chai.request(server)
-//         .put(`/api/user/${userId}`)
-//         .set('Authorization', `Bearer ${token}`)
-//         .send(updatedUserData)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message } = res.body;
-//           // Verify that the response status and error message are correct
-//           expect(status).to.equal(404);
-//           expect(message).to.equal('User not found');
-//           done();
-//         });
-//     });
-
-//     it('TC-205-5 Niet ingelogd', (done) => {
-//       const userId = 1;
-//       const updatedUserData = {
-//         firstName: 'John',
-//         lastName: 'Doe',
-//         emailAdress: 'johndoe@example.com',
-//         password: 'Password2!',
-//         phoneNumber: '987654321',
-//         street: '456 Street',
-//         city: 'Town'
-//       };
-
-//       chai.request(server)
-//         .put(`/api/user/${userId}`)
-//         .send(updatedUserData)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message } = res.body;
-//           // Verify that the response status and error message are correct
-//           expect(status).to.equal(401);
-//           expect(message).to.equal('Unauthorized: Missing or invalid token');
-//           done();
-//         });
-//     });
-
-//     it('TC-205-6 Gebruiker succesvol gewijzigd', (done) => {
-//       const userId = 1;
-//       const updatedUserData = {
-//         firstName: 'Jane',
-//         lastName: 'Doe',
-//         emailAdress: 'janedoe@example.com',
-//         password: 'Password2!',
-//         phoneNumber: '987654321',
-//         street: '456 Street',
-//         city: 'Town'
-//       };
-
-//       chai.request(server)
-//         .put(`/api/user/${userId}`)
-//         .set('Authorization', `Bearer ${token}`)
-//         .send(updatedUserData)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message, data } = res.body;
-//           // Verify that the response status, message, and data are correct
-//           expect(status).to.equal(200);
-//           expect(message).to.equal('User updated successfully');
-//           expect(data).to.be.an('object');
-//           expect(data.firstName).to.equal('Jane');
-//           expect(data.lastName).to.equal('Doe');
-//           expect(data.emailAdress).to.equal('janedoe@example.com');
-//           expect(data.phoneNumber).to.equal('987654321');
-//           expect(data.street).to.equal('456 Street');
-//           expect(data.city).to.equal('Town');
-//           done();
-//         });
-//     });
-//   });
-//   // ----- UC-205 Updaten van usergegevens -----
-
-//   // UC-206 Verwijderen van user
-//   describe('UC-206 Verwijderen van user', () => {
-//     let token = '';
-
-//     beforeEach((done) => {
-//       logger.debug('beforeEach called');
-//       pool.getConnection(function (err, conn) {
-//         if (err) throw err;
-//         conn.query(
-//           'ALTER TABLE `user` AUTO_INCREMENT = 1;',
-//           function (error, result, fields) {
-//             conn.query(
-//               CLEAR_USERS_TABLE,
-//               function (error, results, fields) {
-//                 // Create a user for testing
-//                 const userData = {
-//                   firstName: 'John',
-//                   lastName: 'Doe',
-//                   emailAdress: 'johndoe@example.com',
-//                   password: 'Password1!',
-//                   phoneNumber: '123456789',
-//                   street: '123 Street',
-//                   city: 'City'
-//                 };
-
-//                 userController.createUser(userData, (error, result) => {
-//                   // Generate a token for the user
-//                   token = jwt.sign({ userId: result.insertId }, jwtSecretKey);
-
-//                   conn.release();
-//                   if (error) throw error;
-//                   logger.debug('beforeEach done');
-//                   done();
-//                 });
-//               }
-//             );
-//           }
-//         );
-//       });
-//     });
-
-//     it('TC-206-1 Gebruiker bestaat niet', (done) => {
-//       const userId = 999;
-
-//       chai.request(server)
-//         .delete(`/api/user/${userId}`)
-//         .set('Authorization', `Bearer ${token}`)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message } = res.body;
-//           // Verify that the response status and error message are correct
-//           expect(status).to.equal(404);
-//           expect(message).to.equal('User not found');
-//           done();
-//         });
-//     });
-
-//     it('TC-206-2 Gebruiker is niet ingelogd', (done) => {
-//       const userId = 1;
-
-//       chai.request(server)
-//         .delete(`/api/user/${userId}`)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message } = res.body;
-//           // Verify that the response status and error message are correct
-//           expect(status).to.equal(401);
-//           expect(message).to.equal('Unauthorized: Missing or invalid token');
-//           done();
-//         });
-//     });
-
-//     it('TC-206-3 De gebruiker is niet de eigenaar van de data', (done) => {
-//       const userId = 1;
-
-//       // Generate a token for a different user
-//       const differentUserToken = jwt.sign({ userId: 999 }, jwtSecretKey);
-
-//       chai.request(server)
-//         .delete(`/api/user/${userId}`)
-//         .set('Authorization', `Bearer ${differentUserToken}`)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message } = res.body;
-//           // Verify that the response status and error message are correct
-//           expect(status).to.equal(403);
-//           expect(message).to.equal('Forbidden: You are not the owner of this user');
-//           done();
-//         });
-//     });
-
-//     it('TC-206-4 Gebruiker succesvol verwijderd', (done) => {
-//       const userId = 1;
-
-//       chai.request(server)
-//         .delete(`/api/user/${userId}`)
-//         .set('Authorization', `Bearer ${token}`)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message } = res.body;
-//           // Verify that the response status and message are correct
-//           expect(status).to.equal(200);
-//           expect(message).to.equal('User deleted successfully');
-//           done();
-//         });
-//     });
-//   });
-//   // ----- UC-206 Verwijderen van user -----
+// Clearing query's
+const CLEAR_MEAL_TABLE = 'DELETE IGNORE FROM `meal`;';
+const CLEAR_PARTICIPANTS_TABLE = 'DELETE IGNORE FROM `meal_participants_user`;';
+const CLEAR_USERS_TABLE = 'DELETE IGNORE FROM `user`;';
+const CLEAR_DB =
+	CLEAR_MEAL_TABLE + CLEAR_PARTICIPANTS_TABLE + CLEAR_USERS_TABLE;
+
+//INSERT USER
+const INSERT_USER =
+	'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `phoneNumber`, `street`, `city` ) VALUES' +
+	'(1, "first", "last", "name@server.nl", "Password1!", "0000000000", "street", "city");';
+const INSERT_USER2 =
+	'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `phoneNumber`, `street`, `city` ) VALUES' +
+	'(2, "second", "secondlast", "secondname@server.nl", "Password1!", "0000000000", "secondstreet", "secondcity");';
+const INSERT_USER3 =
+	'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `phoneNumber`, `street`, `city`, `isActive` ) VALUES' +
+	'(3, "third", "thirdlast", "thirdname@server.nl", "Password1!", "0000000000", "thirdstreet", "thirdcity", 0);';
+const INSERT_USER4 =
+	'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `phoneNumber`, `street`, `city`, `isActive` ) VALUES' +
+	'(4, "fourth", "fourthlast", "fourthname@server.nl", "Password1!", "0000000000", "fourthstreet", "fourthcity", 0);';
+
+//INSERT MEAL
+const INSERT_MEAL = `INSERT INTO meal (id, isActive, isVega, isVegan, isToTakeHome, dateTime, maxAmountOfParticipants, price, imageUrl, cookId, name, description) VALUES (1, 1, 1, 1, 1, '2022-05-20 06:36:27', 6, 6.75, 'https://miljuschka.nl/wp-content/uploads/2021/02/Pasta-bolognese-3-2.jpg', 1, 'Spaghetti Bolognese', 'Dé pastaklassieker bij uitstek.')`;
+const INSERT_MEAL2 = `INSERT INTO meal (id, isActive, isVega, isVegan, isToTakeHome, dateTime, maxAmountOfParticipants, price, imageUrl, cookId, name, description) VALUES (2, 0, 0, 0, 0, '2022-06-20 06:36:27', 7, 7.75, 'https://miljuschka.nl/wp-content/uploads/2021/02/Pasta-bolognese-3-2.jpg', 2, 'Spaghetti Bolognese 2', 'Dé pastaklassieker bij uitstek 2.')`;
+
+describe('CRUD Users /api/user', () => {
+	describe('UC-201 Register New User', () => {
+		beforeEach((done) => {
+			logger.debug('beforeEach called');
+			dbconnection.getConnection(function (err, connection) {
+				if (err) throw err;
+				connection.query(
+					'ALTER TABLE user AUTO_INCREMENT = 1;',
+					(error, result, field) => {
+						connection.query(
+							CLEAR_DB + INSERT_USER,
+							function (error, results, fields) {
+								connection.release();
+								if (error) throw error;
+								logger.debug('beforeEach done');
+								done();
+							}
+						);
+					}
+				);
+			});
+		});
+
+		it('TC-201-1 Required field is missing /api/user', (done) => {
+			chai.request(server)
+				.post('/api/user')
+				.send({
+					lastName: 'Henk',
+					street: 'Meulenbroek 21',
+					city: 'Bleskensgraaf',
+					password: 'Secrets0',
+					emailAdress: 'daanvdm@hotmail.com',
+				})
+				.end((err, res) => {
+					res.should.be.an('object');
+					let { status, message } = res.body;
+					status.should.equals(400);
+					message.should.be
+						.a('string')
+						.that.equals('First Name cannot be null!');
+					done();
+				});
+		});
+
+		it('TC 201-2 Non-valid emailAdress /api/user', (done) => {
+			chai.request(server)
+				.post('/api/user')
+				.send({
+					firstName: 'Ingrid',
+					lastName: 'Henk',
+					street: 'Meulenbroek 21',
+					city: 'Bleskensgraaf',
+					password: 'Secrets0',
+					emailAdress: 'daanvdmhotmail.com',
+				})
+				.end((err, res) => {
+					res.should.be.an('object');
+					let { status, message } = res.body;
+					status.should.equals(400);
+					message.should.be
+						.a('string')
+						.that.equals('Invalid emailadres');
+					done();
+				});
+		});
+
+		it('TC 201-3 Non-valid password /api/user', (done) => {
+			chai.request(server)
+				.post('/api/user')
+				.send({
+					firstName: 'Ingrid',
+					lastName: 'Henk',
+					street: 'Meulenbroek 21',
+					city: 'Bleskensgraaf',
+					phoneNumber: '0631490687',
+					password: 1,
+					emailAdress: 'daanvdm@hotmail.com',
+				})
+				.end((err, res) => {
+					res.should.be.an('object');
+					let { status, message } = res.body;
+					status.should.equals(400);
+					message.should.be
+						.a('string')
+						.that.equals(
+							'Password must contain 8-15 characters which contains at least one lower- and uppercase letter, one special character and one digit'
+						);
+					done();
+				});
+		});
+
+		it('TC 201-4 User already exists /api/user', (done) => {
+			chai.request(server)
+				.post('/api/user')
+				.send({
+					firstName: 'first',
+					lastName: 'last',
+					isActive: 1,
+					emailAdress: 'name@server.nl',
+					password: 'Secrets0',
+					phoneNumber: '0631490687',
+					roles: 'editor,guest',
+					street: 'street',
+					city: 'city',
+				})
+				.end((err, res) => {
+					res.should.be.an('object');
+					let { status, message } = res.body;
+					status.should.equals(409);
+					message.should.be
+						.a('string')
+						.that.equals(
+							'The email-address: name@server.nl has already been taken!'
+						);
+					done();
+				});
+		});
+
+		it('TC 201-5 User added succesfully /api/user', (done) => {
+			chai.request(server)
+				.post('/api/user')
+				.send({
+					firstName: 'Daan',
+					lastName: 'van der Meulen',
+					isActive: 1,
+					emailAdress: 'daanvdm@hotmail.com',
+					password: 'Secrets0',
+					phoneNumber: '0631490687',
+					roles: 'editor,guest',
+					street: 'Meulenbroek',
+					city: 'Bleksensgraaf',
+				})
+				.end((err, res) => {
+					res.should.be.an('object');
+					let { status, result } = res.body;
+					status.should.equals(201);
+					assert.deepEqual(result, {
+						id: 2,
+						firstName: 'Daan',
+						lastName: 'van der Meulen',
+						isActive: 1,
+						emailAdress: 'daanvdm@hotmail.com',
+						password: 'Secrets0',
+						phoneNumber: '0631490687',
+						roles: 'editor,guest',
+						street: 'Meulenbroek',
+						city: 'Bleksensgraaf',
+					});
+					logger.debug(result);
+					done();
+				});
+		});
+	});
+
+	describe('UC-202 User Overview /api/user', () => {
+		describe('UC-202-1 Show 0 users/api/user', () => {
+			beforeEach((done) => {
+				logger.debug('beforeEach called');
+				dbconnection.getConnection(function (err, connection) {
+					if (err) throw err;
+					connection.query(
+						CLEAR_DB,
+						function (error, results, fields) {
+							connection.release();
+							if (error) throw error;
+							logger.debug('beforeEach done');
+							done();
+						}
+					);
+				});
+			});
+
+			it('TC-202-2 Show 2 users /api/user', (done) => {
+				chai.request(server)
+					.get('/api/user')
+					.set(
+						'authorization',
+						'Bearer ' + jwt.sign({ userId: 2 }, jwtSecretKey)
+					)
+					.end((err, res) => {
+						res.should.be.an('object');
+						let { status, result } = res.body;
+						status.should.equals(200);
+						assert.deepEqual(result, []);
+						done();
+					});
+			});
+		});
+
+		describe('UC-202-2 Show 2 users/api/user', () => {
+			beforeEach((done) => {
+				logger.debug('beforeEach called');
+				dbconnection.getConnection(function (err, connection) {
+					if (err) throw err;
+					connection.query(
+						CLEAR_DB + INSERT_USER + INSERT_USER2,
+						function (error, results, fields) {
+							connection.release();
+							if (error) throw error;
+							logger.debug('beforeEach done');
+							done();
+						}
+					);
+				});
+			});
+
+			it('TC-202-2 Show 2 users /api/user', (done) => {
+				chai.request(server)
+					.get('/api/user')
+					.set(
+						'authorization',
+						'Bearer ' + jwt.sign({ userId: 2 }, jwtSecretKey)
+					)
+					.end((err, res) => {
+						res.should.be.an('object');
+						let { status, result } = res.body;
+						status.should.equals(200);
+						assert.deepEqual(result, [
+							{
+								id: 1,
+								firstName: 'first',
+								lastName: 'last',
+								isActive: 1,
+								emailAdress: 'name@server.nl',
+								password: 'Password1!',
+								phoneNumber: '0000000000',
+								roles: 'editor,guest',
+								street: 'street',
+								city: 'city',
+							},
+							{
+								id: 2,
+								firstName: 'second',
+								lastName: 'secondlast',
+								isActive: 1,
+								emailAdress: 'secondname@server.nl',
+								password: 'Password1!',
+								phoneNumber: '0000000000',
+								roles: 'editor,guest',
+								street: 'secondstreet',
+								city: 'secondcity',
+							},
+						]);
+						done();
+					});
+			});
+		});
+
+		describe('UC-202 Remaining test cases users/api/user', () => {
+			beforeEach((done) => {
+				logger.debug('beforeEach called');
+				dbconnection.getConnection(function (err, connection) {
+					if (err) throw err;
+					connection.query(
+						'ALTER TABLE meal AUTO_INCREMENT = 1;',
+						(error, result, field) => {
+							connection.query(
+								'ALTER TABLE user AUTO_INCREMENT = 1;',
+								function (error, result, fields) {
+									connection.query(
+										CLEAR_DB +
+										INSERT_USER +
+										INSERT_USER2 +
+										INSERT_USER3 +
+										INSERT_USER4,
+										function (error, results, fields) {
+											connection.release();
+											if (error) throw error;
+											logger.debug('beforeEach done');
+											done();
+										}
+									);
+								}
+							);
+						}
+					);
+				});
+			});
+
+			it('TC-202-3 Show users for non-existing name /api/user', (done) => {
+				chai.request(server)
+					.get('/api/user?firstName=fa;sldkfj;aslkjdf;lksdjf')
+					.set(
+						'authorization',
+						'Bearer ' + jwt.sign({ userId: 2 }, jwtSecretKey)
+					)
+					.end((err, res) => {
+						res.should.be.an('object');
+						let { status, result } = res.body;
+						status.should.equals(200);
+						result.should.be.an('array').that.lengthOf(0);
+						done();
+					});
+			});
+
+			it('TC-202-4 Show users for isActive=false /api/user', (done) => {
+				chai.request(server)
+					.get('/api/user?isActive=false')
+					.set(
+						'authorization',
+						'Bearer ' + jwt.sign({ userId: 2 }, jwtSecretKey)
+					)
+					.end((err, res) => {
+						res.should.be.an('object');
+						let { status, result } = res.body;
+						status.should.equals(200);
+						result.should.be.an('array').that.lengthOf(2);
+						done();
+					});
+			});
+
+			it('TC-202-5 Show users for isActive=true /api/user', (done) => {
+				chai.request(server)
+					.get('/api/user?isActive=true')
+					.set(
+						'authorization',
+						'Bearer ' + jwt.sign({ userId: 2 }, jwtSecretKey)
+					)
+					.end((err, res) => {
+						res.should.be.an('object');
+						let { status, result } = res.body;
+						status.should.equals(200);
+						result.should.be.an('array').that.lengthOf(2);
+						done();
+					});
+			});
+
+			it('TC-202-6 Show users for name=first /api/user', (done) => {
+				chai.request(server)
+					.get('/api/user?firstName=first')
+					.set(
+						'authorization',
+						'Bearer ' + jwt.sign({ userId: 2 }, jwtSecretKey)
+					)
+					.end((err, res) => {
+						res.should.be.an('object');
+						let { status, result } = res.body;
+						status.should.equals(200);
+						result.should.be.an('array').that.lengthOf(1);
+						done();
+					});
+			});
+		});
+	});
+
+	describe('UC-203 Get User Profile /api/user', () => {
+		beforeEach((done) => {
+			logger.debug('beforeEach called');
+			dbconnection.getConnection(function (err, connection) {
+				if (err) throw err;
+				connection.query(
+					'ALTER TABLE meal AUTO_INCREMENT = 1;',
+					(error, result, field) => {
+						connection.query(
+							'ALTER TABLE user AUTO_INCREMENT = 1;',
+							function (error, result, fields) {
+								connection.query(
+									CLEAR_DB + INSERT_USER + INSERT_MEAL,
+									function (error, results, fields) {
+										connection.release();
+										if (error) throw error;
+										logger.debug('beforeEach done');
+										done();
+									}
+								);
+							}
+						);
+					}
+				);
+			});
+		});
+
+		it('TC-203-1 Invalid token /api/user/profile', (done) => {
+			chai.request(server)
+				.get('/api/user/profile')
+				.set('authorization', 'Bearer ' + jwt.sign({ userId: 1 }, 'a'))
+				.end((err, res) => {
+					res.should.be.an('object');
+					let { status, message } = res.body;
+					status.should.equals(401);
+					message.should.be.a('string').that.equals('Not authorized');
+					done();
+				});
+		});
+
+		it('TC-203-2 Valid token and valid profile /api/user/profile', (done) => {
+			chai.request(server)
+				.get('/api/user/profile')
+				.set(
+					'authorization',
+					'Bearer ' + jwt.sign({ userId: 1 }, jwtSecretKey)
+				)
+				.send({})
+				.end((err, res) => {
+					res.should.be.an('object');
+					let { status, result } = res.body;
+					status.should.equals(200);
+					assert.deepEqual(result, {
+						city: 'city',
+						emailAdress: 'name@server.nl',
+						firstName: 'first',
+						id: 1,
+						isActive: 1,
+						lastName: 'last',
+						password: 'Password1!',
+						phoneNumber: '0000000000',
+						roles: 'editor,guest',
+						street: 'street',
+					});
+					done();
+				});
+		});
+	});
+
+	describe('UC-204 Get User Details /api/user/?:id', () => {
+		beforeEach((done) => {
+			logger.debug('beforeEach called');
+			// maak de testdatabase leeg zodat we onze testen kunnen uitvoeren.
+			dbconnection.getConnection(function (err, connection) {
+				if (err) throw err; // not connected!
+
+				// Use the connection
+				connection.query(
+					CLEAR_DB + INSERT_USER,
+					function (error, results, fields) {
+						// When done with the connection, release it.
+						connection.release();
+
+						// Handle error after the release.
+						if (error) throw error;
+						// Let op dat je done() pas aanroept als de query callback eindigt!
+						logger.debug('beforeEach done');
+						done();
+					}
+				);
+			});
+		});
+
+		it('TC-204-1 Invalid token /api/user', (done) => {
+			chai.request(server)
+				.get('/api/user/1')
+				.set('authorization', 'Bearer ' + jwt.sign({ userId: 1 }, 'a'))
+				.end((err, res) => {
+					res.should.be.an('object');
+					let { status, message } = res.body;
+					status.should.equals(401);
+					message.should.be.a('string').that.equals('Not authorized');
+					done();
+				});
+		});
+
+		it('TC-204-2 Invalid userId /api/user', (done) => {
+			chai.request(server)
+				.get('/api/user/2')
+				.set(
+					'authorization',
+					'Bearer ' + jwt.sign({ userId: 1 }, jwtSecretKey)
+				)
+				.end((err, res) => {
+					res.should.be.an('object');
+					let { status, message } = res.body;
+					status.should.equals(404);
+					message.should.be
+						.a('string')
+						.that.equals('User with ID 2 not found');
+					done();
+				});
+		});
+
+		it('TC-204-3 Valid userId, get one user back /api/user', (done) => {
+			chai.request(server)
+				.get('/api/user/1')
+				.set(
+					'authorization',
+					'Bearer ' + jwt.sign({ userId: 1 }, jwtSecretKey)
+				)
+				.end((err, res) => {
+					res.should.be.an('object');
+					let { status, result } = res.body;
+					status.should.equals(200);
+					assert.deepEqual(result, {
+						id: 1,
+						firstName: 'first',
+						lastName: 'last',
+						isActive: 1,
+						emailAdress: 'name@server.nl',
+						password: 'Password1!',
+						phoneNumber: '0000000000',
+						roles: 'editor,guest',
+						street: 'street',
+						city: 'city',
+					});
+					done();
+				});
+		});
+	});
+
+	describe('UC-205 Edit User Details /api/user', () => {
+		beforeEach((done) => {
+			logger.debug('beforeEach called');
+			dbconnection.getConnection(function (err, connection) {
+				if (err) throw err;
+				connection.query(
+					CLEAR_DB + INSERT_USER,
+					function (error, results, fields) {
+						connection.release();
+						if (error) throw error;
+						logger.debug('beforeEach done');
+						done();
+					}
+				);
+			});
+		});
+
+		it('TC-205-1 Email missing /api/user', (done) => {
+			chai.request(server)
+				.put('/api/user/1')
+				.set(
+					'authorization',
+					'Bearer ' + jwt.sign({ userId: 1 }, jwtSecretKey)
+				)
+				.send({
+					firstName: 'Daan',
+					lastName: 'van der Meulen',
+					isActive: 1,
+					password: 'JeMoeder4!',
+					phoneNumber: '0631490687',
+					roles: 'editor,guest',
+					street: 'Meulenbroek',
+					city: 'Bleksensgraaf',
+				})
+				.end((err, res) => {
+					res.should.be.an('object');
+					let { status, message } = res.body;
+					status.should.equals(400);
+					message.should.be
+						.a('string')
+						.that.equals('emailAdress cannot be null!');
+					done();
+				});
+		});
+
+		it('TC-205-3 Invalid phoneNumber /api/user', (done) => {
+			chai.request(server)
+				.put('/api/user/1')
+				.set(
+					'authorization',
+					'Bearer ' + jwt.sign({ userId: 1 }, jwtSecretKey)
+				)
+				.send({
+					firstName: 'Daan',
+					lastName: 'van der Meulen',
+					isActive: 1,
+					emailAdress: 'daanvdm@hotmail.com',
+					password: 'JeMoeder4!',
+					phoneNumber: '631490687',
+					roles: 'editor,guest',
+					street: 'Meulenbroek',
+					city: 'Bleksensgraaf',
+				})
+				.end((err, res) => {
+					res.should.be.an('object');
+					let { status, message } = res.body;
+					status.should.equals(400);
+					message.should.be
+						.a('string')
+						.that.equals('Phonenumber should be 10 digits');
+					done();
+				});
+		});
+
+		it('TC-205-4 User does not exist /api/user', (done) => {
+			chai.request(server)
+				.put('/api/user/2')
+				.set(
+					'authorization',
+					'Bearer ' + jwt.sign({ userId: 1 }, jwtSecretKey)
+				)
+				.send({
+					firstName: 'Daan',
+					lastName: 'van der Meulen',
+					isActive: 1,
+					emailAdress: 'daanvdm@hotmail.com',
+					password: 'JeMoeder4!',
+					phoneNumber: '0631490687',
+					roles: 'editor,guest',
+					street: 'Meulenbroek',
+					city: 'Bleksensgraaf',
+				})
+				.end((err, res) => {
+					res.should.be.an('object');
+					let { status, message } = res.body;
+					status.should.equals(400);
+					message.should.be
+						.a('string')
+						.that.equals(
+							'Update failed, user with ID 2 does not exist'
+						);
+					done();
+				});
+		});
+
+		it('TC-205-5 User not signed in /api/user', (done) => {
+			chai.request(server)
+				.put('/api/user/1')
+				.set('authorization', 'Bearer ' + jwt.sign({ userId: 1 }, 'a'))
+				.end((err, res) => {
+					res.should.be.an('object');
+					let { status, message } = res.body;
+					status.should.equals(401);
+					message.should.be.a('string').that.equals('Not authorized');
+					done();
+				});
+		});
+
+		it('TC-205-6 User succesfully edited /api/user', (done) => {
+			chai.request(server)
+				.put('/api/user/1')
+				.set(
+					'authorization',
+					'Bearer ' + jwt.sign({ userId: 1 }, jwtSecretKey)
+				)
+				.send({
+					firstName: 'Daan',
+					lastName: 'van der Meulen',
+					isActive: 1,
+					emailAdress: 'daanvdm@hotmail.com',
+					password: 'JeMoeder4!',
+					phoneNumber: '0631490687',
+					roles: 'editor,guest',
+					street: 'Meulenbroek',
+					city: 'Bleksensgraaf',
+				})
+				.end((err, res) => {
+					res.should.be.an('object');
+					let { status, result } = res.body;
+					status.should.equals(200);
+					assert.deepEqual(result, {
+						id: 1,
+						firstName: 'Daan',
+						lastName: 'van der Meulen',
+						isActive: 1,
+						emailAdress: 'daanvdm@hotmail.com',
+						password: 'JeMoeder4!',
+						phoneNumber: '0631490687',
+						roles: 'editor,guest',
+						street: 'Meulenbroek',
+						city: 'Bleksensgraaf',
+					});
+					done();
+				});
+		});
+	});
+
+	describe('UC-206 Delete User', () => {
+		beforeEach((done) => {
+			logger.debug('beforeEach called');
+			dbconnection.getConnection(function (err, connection) {
+				if (err) throw err;
+				connection.query(
+					'ALTER TABLE user AUTO_INCREMENT = 1;',
+					function (error, result, fields) {
+						connection.query(
+							CLEAR_DB +
+							INSERT_USER +
+							INSERT_USER2 +
+							INSERT_USER3,
+							function (error, results, fields) {
+								connection.release();
+								if (error) throw error;
+								logger.debug('beforeEach done');
+								done();
+							}
+						);
+					}
+				);
+			});
+		});
+
+		it('TC-206-1 User does not exist /api/user', (done) => {
+			chai.request(server)
+				.delete('/api/user/999')
+				.set(
+					'authorization',
+					'Bearer ' + jwt.sign({ userId: 3 }, jwtSecretKey)
+				)
+				.end((err, res) => {
+					res.should.be.an('object');
+					let { status, message } = res.body;
+					status.should.equals(400);
+					message.should.be
+						.a('string')
+						.that.equals('User does not exist');
+					done();
+				});
+		});
+
+		it('TC-206-2 Not logged in /api/user', (done) => {
+			chai.request(server)
+				.delete('/api/user/1')
+				.set('authorization', 'Bearer ' + jwt.sign({ userId: 1 }, 'a'))
+				.end((err, res) => {
+					res.should.be.an('object');
+					let { status, message } = res.body;
+					status.should.equals(401);
+					message.should.be.a('string').that.equals('Not authorized');
+					done();
+				});
+		});
+
+		it('TC-206-3 Actor is not owner /api/user', (done) => {
+			chai.request(server)
+				.delete('/api/user/3')
+				.set(
+					'authorization',
+					'Bearer ' + jwt.sign({ userId: 2 }, jwtSecretKey)
+				)
+				.end((err, res) => {
+					res.should.be.an('object');
+					let { status, message } = res.body;
+					status.should.equals(403);
+					message.should.be
+						.a('string')
+						.that.equals('User is not the owner');
+					done();
+				});
+		});
+
+		it('TC-206-4 User deleted succesfully /api/user', (done) => {
+			chai.request(server)
+				.delete('/api/user/1')
+				.set(
+					'authorization',
+					'Bearer ' + jwt.sign({ userId: 1 }, jwtSecretKey)
+				)
+				.end((err, res) => {
+					res.should.be.an('object');
+					let { status, message } = res.body;
+					status.should.equals(200);
+					message.should.be
+						.a('string')
+						.that.equals('User with ID 1 deleted successfuly!');
+					done();
+				});
+		});
+	});
 });
