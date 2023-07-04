@@ -49,7 +49,6 @@ describe('User Tests', () => {
       const userData = {
         firstName: 'John',
         lastName: 'Doe',
-        emailAdress: 'johndoe@example.com',
         password: 'Password1!',
         phoneNumber: '123456789',
         street: '123 Street',
