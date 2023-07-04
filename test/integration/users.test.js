@@ -646,112 +646,94 @@ describe('User Tests', () => {
   });
   // ----- UC-205 Updaten van usergegevens -----
 
-//   // UC-206 Verwijderen van user
-//   describe('UC-206 Verwijderen van user', () => {
-//     let token = '';
+  // UC-206 Verwijderen van user
+  describe('UC-206 Verwijderen van user', () => {
 
-//     beforeEach((done) => {
-//       logger.debug('beforeEach called');
-//       pool.getConnection(function (err, conn) {
-//         if (err) throw err;
-//         conn.query(
-//           'ALTER TABLE `user` AUTO_INCREMENT = 1;',
-//           function (error, result, fields) {
-//             conn.query(
-//               CLEAR_USERS_TABLE,
-//               function (error, results, fields) {
-//                 // Create a user for testing
-//                 const userData = {
-//                   firstName: 'John',
-//                   lastName: 'Doe',
-//                   emailAdress: 'johndoe@example.com',
-//                   password: 'Password1!',
-//                   phoneNumber: '123456789',
-//                   street: '123 Street',
-//                   city: 'City'
-//                 };
+    beforeEach((done) => {
+        logger.debug('beforeEach called');
+        pool.getConnection(function (err, conn) {
+          if (err) throw err;
+          conn.query(
+            'ALTER TABLE `user` AUTO_INCREMENT = 1;',
+            function (error, result, fields) {
+              conn.query(
+                CLEAR_USERS_TABLE + INSERT_USER + INSERT_USER2,
+                function (error, results, fields) {
+                  conn.release();
+                  if (error) throw error;
+                  logger.debug('beforeEach done');
+                  done();
+                }
+              );
+            }
+          );
+        });
+      });
 
-//                 userController.createUser(userData, (error, result) => {
-//                   // Generate a token for the user
-//                   token = jwt.sign({ userId: result.insertId }, jwtSecretKey);
+    let token = jwt.sign({ userId: 99 }, jwtSecretKey);
 
-//                   conn.release();
-//                   if (error) throw error;
-//                   logger.debug('beforeEach done');
-//                   done();
-//                 });
-//               }
-//             );
-//           }
-//         );
-//       });
-//     });
+    it('TC-206-1 Gebruiker bestaat niet', (done) => {
+      const userId = 999;
 
-//     it('TC-206-1 Gebruiker bestaat niet', (done) => {
-//       const userId = 999;
+      chai.request(server)
+        .delete(`/api/user/${userId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .end((err, res) => {
+          res.should.be.an('object');
+          let { status, message } = res.body;
+          // Verify that the response status and error message are correct
+          expect(status).to.equal(403);
+          expect(message).to.equal('Forbidden: You are not the owner of this user');
+          done();
+        });
+    });
 
-//       chai.request(server)
-//         .delete(`/api/user/${userId}`)
-//         .set('Authorization', `Bearer ${token}`)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message } = res.body;
-//           // Verify that the response status and error message are correct
-//           expect(status).to.equal(404);
-//           expect(message).to.equal('User not found');
-//           done();
-//         });
-//     });
+    it('TC-206-2 Gebruiker is niet ingelogd', (done) => {
+      const userId = 1;
 
-//     it('TC-206-2 Gebruiker is niet ingelogd', (done) => {
-//       const userId = 1;
+      chai.request(server)
+        .delete(`/api/user/${userId}`)
+        .end((err, res) => {
+          res.should.be.an('object');
+          let { status, message } = res.body;
+          // Verify that the response status and error message are correct
+          expect(status).to.equal(401);
+          expect(message).to.equal('Unauthorized: Missing or invalid token');
+          done();
+        });
+    });
 
-//       chai.request(server)
-//         .delete(`/api/user/${userId}`)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message } = res.body;
-//           // Verify that the response status and error message are correct
-//           expect(status).to.equal(401);
-//           expect(message).to.equal('Unauthorized: Missing or invalid token');
-//           done();
-//         });
-//     });
+    it('TC-206-3 De gebruiker is niet de eigenaar van de data', (done) => {
+      const userId = 1;
 
-//     it('TC-206-3 De gebruiker is niet de eigenaar van de data', (done) => {
-//       const userId = 1;
+      chai.request(server)
+        .delete(`/api/user/${userId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .end((err, res) => {
+          res.should.be.an('object');
+          let { status, message } = res.body;
+          // Verify that the response status and error message are correct
+          expect(status).to.equal(403);
+          expect(message).to.equal('Forbidden: You are not the owner of this user');
+          done();
+        });
+    });
 
-//       // Generate a token for a different user
-//       const differentUserToken = jwt.sign({ userId: 999 }, jwtSecretKey);
+    it('TC-206-4 Gebruiker succesvol verwijderd', (done) => {
+      const userId = 99;
 
-//       chai.request(server)
-//         .delete(`/api/user/${userId}`)
-//         .set('Authorization', `Bearer ${differentUserToken}`)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message } = res.body;
-//           // Verify that the response status and error message are correct
-//           expect(status).to.equal(403);
-//           expect(message).to.equal('Forbidden: You are not the owner of this user');
-//           done();
-//         });
-//     });
-
-//     it('TC-206-4 Gebruiker succesvol verwijderd', (done) => {
-//       const userId = 1;
-
-//       chai.request(server)
-//         .delete(`/api/user/${userId}`)
-//         .set('Authorization', `Bearer ${token}`)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message } = res.body;
-//           // Verify that the response status and message are correct
-//           expect(status).to.equal(200);
-//           expect(message).to.equal('User deleted successfully');
-//           done();
-//         });
-//     });
-//   });
-//   // ----- UC-206 Verwijderen van user -----
+      chai.request(server)
+        .delete(`/api/user/${userId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .end((err, res) => {
+          res.should.be.an('object');
+          let { status, message } = res.body;
+          // Verify that the response status and message are correct
+          expect(status).to.equal(200);
+          expect(message).to.equal('User deleted successfully');
+          done();
+        });
+    });
+  });
+  // ----- UC-206 Verwijderen van user -----
 });

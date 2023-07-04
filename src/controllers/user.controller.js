@@ -383,48 +383,60 @@ const userController = {
   deleteUser: (req, res) => {
     logger.info('deleteUser called');
     logger.trace('Delete user profile', req.params.userId);
-
-    let sqlStatement = 'DELETE FROM `user` WHERE id=?';
-
-    pool.getConnection(function (err, conn) {
-      // Do something with the connection
-      if (err) {
-        // Handle connection error
-        return next({
-            status: 500,
-            message: 'Failed to get a database connection.'
+  
+    const userId = req.params.userId;
+    const token = req.headers.authorization.split(' ')[1]; // the token is sent in the request headers as "Authorization"
+  
+    jwt.verify(token, jwtSecretKey, (error, decodedToken) => {
+      if (error || decodedToken.userId !== userId) {
+        return res.status(403).json({
+          status: 403,
+          message: 'Forbidden: You are not the owner of this user',
         });
       }
-      if (conn) {
-        conn.query(sqlStatement, [req.params.userId], (err, results, fields) => {
+  
+      const sqlStatement = 'DELETE FROM `user` WHERE id=?';
+  
+      pool.getConnection((err, connection) => {
+        if (err) {
+          // Handle connection error
+          return next({
+            status: 500,
+            message: 'Failed to get a database connection.',
+          });
+        }
+  
+        connection.query(sqlStatement, [userId], (err, results, fields) => {
+          connection.release(); // Release the connection after the query
+  
           if (err) {
             // Handle query execution error
             return next({
               status: 409,
-              message: 'Meal not created.'
-          });
-          }
-          if (results) {
-            logger.trace('Found', results.length, 'results');
-            res.status(200).json({
-              code: 200,
-              message: 'deleted user',
-              data: results
+              message: 'Failed to delete user.',
             });
           }
-          else {
-            logger.warn('no user found')
+  
+          if (results.affectedRows > 0) {
+            // User deleted successfully
+            res.status(200).json({
+              status: 200,
+              message: 'User deleted successfully',
+              data: results,
+            });
+          } else {
+            // User not found
             res.status(400).json({
-              code: 400,
+              status: 400,
               message: 'No user found',
-              data: results
+              data: results,
             });
           }
         });
-        pool.releaseConnection(conn);
-      }
+      });
     });
   },
-}
+};
+  
 
 module.exports = userController;
