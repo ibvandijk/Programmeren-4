@@ -52,8 +52,8 @@ describe('UC-101 Inloggen', () => {
 
 	it('TC-101-1 Valid login credentials', (done) => {
 		const loginData = {
-			emailAddress: 'johndoe@example.com',
-			password: 'secret'
+			emailAddress: "johndoe@example.com",
+			password: "secret"
 		};
 
 		chai.request(server)
@@ -80,7 +80,7 @@ describe('UC-101 Inloggen', () => {
 
 	it('TC-101-2 Incomplete login credentials', (done) => {
 		const loginData = {
-			emailAddress: 'johndoe@example.com'
+			emailAddress: "johndoe@example.com"
 		};
 
 		chai.request(server)
@@ -98,8 +98,8 @@ describe('UC-101 Inloggen', () => {
 
 	it('TC-101-3 Invalid login credentials', (done) => {
 		const loginData = {
-			emailAddress: 'johndoe@example.com',
-			password: 'wrongpassword'
+			emailAddress: "johndoe@example.com",
+			password: "wrongpassword"
 		};
 
 		chai.request(server)
@@ -117,8 +117,8 @@ describe('UC-101 Inloggen', () => {
 
 	it('TC-101-4 User not found', (done) => {
 		const loginData = {
-			emailAddress: 'nonexistent@example.com',
-			password: 'Password123'
+			emailAddress: "nonexistent@example.com",
+			password: "Password123"
 		};
 
 		chai.request(server)
