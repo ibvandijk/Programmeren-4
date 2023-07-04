@@ -303,7 +303,7 @@ const userController = {
     // Check if the authenticated user is updating their own data
     const token = req.headers.authorization.split(' ')[1]; // the token is sent in the request headers as "Authorization"
     jwt.verify(token, jwtSecretKey, (error, decodedToken) => {
-      if (parseInt(intdecodedToken.userId) != parseInt(userId)) {
+      if (intdecodedToken.userId != userId) {
         logger.error("test verif userid: ", userId);
         logger.error("test verif verif id: ", decodedToken.userId);
         return res.status(403).json({
