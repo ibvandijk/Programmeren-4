@@ -622,16 +622,14 @@ describe('User Tests', () => {
         city: 'Town'
       };
 
-      const token2 = jwt.sign({ userId: userId }, jwtSecretKey)
-
       chai.request(server)
         .put(`/api/user/${userId}`)
-        .set('Authorization', `Bearer ${token2}`)
+        .set('Authorization', `Bearer ${token}`)
         .send(updatedUserData)
         .end((err, res) => {
           res.should.be.an('object');
           let { status, message, data } = res.body;
-          logger.error("err message: ", message);
+          logger.error("err message: ", message)
           // Verify that the response status, message, and data are correct
           expect(status).to.equal(200);
           expect(message).to.equal('User updated successfully');

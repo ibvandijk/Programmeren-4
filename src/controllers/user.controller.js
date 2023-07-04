@@ -303,9 +303,9 @@ const userController = {
     // Check if the authenticated user is updating their own data
     const token = req.headers.authorization.split(' ')[1]; // the token is sent in the request headers as "Authorization"
     jwt.verify(token, jwtSecretKey, (error, decodedToken) => {
-      if (intdecodedToken.userId != userId) {
+      if (error || decodedToken.userId !== userId) {
         logger.error("test verif userid: ", userId);
-        logger.error("test verif verif id: ", decodedToken.userId);
+        logger.error("test verif verif id: ", userId);
         return res.status(403).json({
           status: 403,
           message: 'Forbidden: You are not the owner of this user',
