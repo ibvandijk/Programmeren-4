@@ -61,7 +61,7 @@ describe('UC-101 Inloggen', () => {
 			.send(loginData)
 			.end((err, res) => {
 				res.should.be.an('object');
-				const { status, result } = res.body;
+				let { status, result } = res.body;
 				// Verify that the response status and result object are correct
 				expect(status).to.equal(200);
 				expect(result).to.be.an('object');
@@ -88,7 +88,7 @@ describe('UC-101 Inloggen', () => {
 			.send(loginData)
 			.end((err, res) => {
 				res.should.be.an('object');
-				const { status, message } = res.body;
+				let { status, message } = res.body;
 				// Verify that the response status and error message are correct
 				expect(status).to.equal(400);
 				expect(message).to.equal('emailAdress and password are required');
@@ -107,7 +107,7 @@ describe('UC-101 Inloggen', () => {
 			.send(loginData)
 			.end((err, res) => {
 				res.should.be.an('object');
-				const { status, message } = res.body;
+				let { status, message } = res.body;
 				// Verify that the response status and error message are correct
 				expect(status).to.equal(401);
 				expect(message).to.equal('Invalid email address or password');
@@ -126,7 +126,7 @@ describe('UC-101 Inloggen', () => {
 			.send(loginData)
 			.end((err, res) => {
 				res.should.be.an('object');
-				const { status, message } = res.body;
+				let { status, message } = res.body;
 				// Verify that the response status and error message are correct
 				expect(status).to.equal(404);
 				expect(message).to.equal('Invalid email address or password');
