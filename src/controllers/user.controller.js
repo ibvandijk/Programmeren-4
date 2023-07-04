@@ -295,7 +295,7 @@ const userController = {
   },
 
   // UC-205 Updaten van usergegevens
-  updateUser: (req, res) => {
+  updateUser: (req, res, next) => {
     logger.info('updateUser called');
     const userId = req.params.userId;
     const updatedData = req.body;
