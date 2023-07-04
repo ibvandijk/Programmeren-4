@@ -371,105 +371,105 @@ describe('User Tests', () => {
         });
     });
   });
-  // ----- UC-203 Opvragen van gebruikersprofiel -----
+  ----- UC-203 Opvragen van gebruikersprofiel -----
 
-//   // UC-204 Opvragen van usergegevens bij ID
-//   describe('UC-204 Opvragen van usergegevens bij ID', () => {
-//     let token = '';
+  // UC-204 Opvragen van usergegevens bij ID
+  describe('UC-204 Opvragen van usergegevens bij ID', () => {
+    let token = '';
 
-//     beforeEach((done) => {
-//       logger.debug('beforeEach called');
-//       pool.getConnection(function (err, conn) {
-//         if (err) throw err;
-//         conn.query(
-//           'ALTER TABLE `user` AUTO_INCREMENT = 1;',
-//           function (error, result, fields) {
-//             conn.query(
-//               CLEAR_USERS_TABLE,
-//               function (error, results, fields) {
-//                 // Create a user for testing
-//                 const userData = {
-//                   firstName: 'John',
-//                   lastName: 'Doe',
-//                   emailAdress: 'johndoe@example.com',
-//                   password: 'Password1!',
-//                   phoneNumber: '123456789',
-//                   street: '123 Street',
-//                   city: 'City'
-//                 };
+    beforeEach((done) => {
+      logger.debug('beforeEach called');
+      pool.getConnection(function (err, conn) {
+        if (err) throw err;
+        conn.query(
+          'ALTER TABLE `user` AUTO_INCREMENT = 1;',
+          function (error, result, fields) {
+            conn.query(
+              CLEAR_USERS_TABLE,
+              function (error, results, fields) {
+                // Create a user for testing
+                const userData = {
+                  firstName: 'John',
+                  lastName: 'Doe',
+                  emailAdress: 'johndoe@example.com',
+                  password: 'Password1!',
+                  phoneNumber: '123456789',
+                  street: '123 Street',
+                  city: 'City'
+                };
 
-//                 userController.createUser(userData, (error, result) => {
-//                   // Generate a token for the user
-//                   token = jwt.sign({ userId: result.insertId }, jwtSecretKey);
+                userController.createUser(userData, (error, result) => {
+                  // Generate a token for the user
+                  token = jwt.sign({ userId: result.insertId }, jwtSecretKey);
 
-//                   conn.release();
-//                   if (error) throw error;
-//                   logger.debug('beforeEach done');
-//                   done();
-//                 });
-//               }
-//             );
-//           }
-//         );
-//       });
-//     });
+                  conn.release();
+                  if (error) throw error;
+                  logger.debug('beforeEach done');
+                  done();
+                });
+              }
+            );
+          }
+        );
+      });
+    });
 
-//     it('TC-204-1 Ongeldig token', (done) => {
-//       const userId = 1;
+    it('TC-204-1 Ongeldig token', (done) => {
+      const userId = 1;
 
-//       chai.request(server)
-//         .get(`/api/user/${userId}`)
-//         .set('Authorization', 'Bearer invalidtoken')
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message } = res.body;
-//           // Verify that the response status and error message are correct
-//           expect(status).to.equal(401);
-//           expect(message).to.equal('Invalid token');
-//           done();
-//         });
-//     });
+      chai.request(server)
+        .get(`/api/user/${userId}`)
+        .set('Authorization', 'Bearer invalidtoken')
+        .end((err, res) => {
+          res.should.be.an('object');
+          let { status, message } = res.body;
+          // Verify that the response status and error message are correct
+          expect(status).to.equal(401);
+          expect(message).to.equal('Invalid token');
+          done();
+        });
+    });
 
-//     it('TC-204-2 Gebruiker-ID bestaat niet', (done) => {
-//       const userId = 999;
+    it('TC-204-2 Gebruiker-ID bestaat niet', (done) => {
+      const userId = 999;
 
-//       chai.request(server)
-//         .get(`/api/user/${userId}`)
-//         .set('Authorization', `Bearer ${token}`)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message } = res.body;
-//           // Verify that the response status and error message are correct
-//           expect(status).to.equal(404);
-//           expect(message).to.equal('User not found');
-//           done();
-//         });
-//     });
+      chai.request(server)
+        .get(`/api/user/${userId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .end((err, res) => {
+          res.should.be.an('object');
+          let { status, message } = res.body;
+          // Verify that the response status and error message are correct
+          expect(status).to.equal(404);
+          expect(message).to.equal('User not found');
+          done();
+        });
+    });
 
-//     it('TC-204-3 Gebruiker-ID bestaat', (done) => {
-//       const userId = 1;
+    it('TC-204-3 Gebruiker-ID bestaat', (done) => {
+      const userId = 1;
 
-//       chai.request(server)
-//         .get(`/api/user/${userId}`)
-//         .set('Authorization', `Bearer ${token}`)
-//         .end((err, res) => {
-//           res.should.be.an('object');
-//           let { status, message, data } = res.body;
-//           // Verify that the response status, message, and data are correct
-//           expect(status).to.equal(200);
-//           expect(message).to.equal('User retrieved successfully');
-//           expect(data).to.be.an('object');
-//           expect(data.firstName).to.equal('John');
-//           expect(data.lastName).to.equal('Doe');
-//           expect(data.emailAdress).to.equal('johndoe@example.com');
-//           expect(data.phoneNumber).to.equal('123456789');
-//           expect(data.street).to.equal('123 Street');
-//           expect(data.city).to.equal('City');
-//           done();
-//         });
-//     });
-//   });
-//   // ----- UC-204 Opvragen van usergegevens bij ID -----
+      chai.request(server)
+        .get(`/api/user/${userId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .end((err, res) => {
+          res.should.be.an('object');
+          let { status, message, data } = res.body;
+          // Verify that the response status, message, and data are correct
+          expect(status).to.equal(200);
+          expect(message).to.equal('User retrieved successfully');
+          expect(data).to.be.an('object');
+          expect(data.firstName).to.equal('John');
+          expect(data.lastName).to.equal('Doe');
+          expect(data.emailAdress).to.equal('johndoe@example.com');
+          expect(data.phoneNumber).to.equal('123456789');
+          expect(data.street).to.equal('123 Street');
+          expect(data.city).to.equal('City');
+          done();
+        });
+    });
+  });
+  // ----- UC-204 Opvragen van usergegevens bij ID -----
 
 //   // UC-205 Updaten van usergegevens
 //   describe('UC-205 Updaten van usergegevens', () => {

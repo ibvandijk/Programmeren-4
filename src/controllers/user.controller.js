@@ -285,6 +285,90 @@ const userController = {
       }
     });
   },
+
+  // UC-205 Updaten van usergegevens
+  updateUser: (req, res) => {
+    logger.info('updateUser called');
+    const userId = req.params.userId;
+    const updatedData = req.body;
+  
+    // Check if the authenticated user is updating their own data
+    const token = req.headers.authorization.split(' ')[1]; // the token is sent in the request headers as "Authorization"
+    jwt.verify(token, jwtSecretKey, (error, decodedToken) => {
+      if (error || decodedToken.userId !== userId) {
+        return res.status(403).json({
+          status: 403,
+          message: 'Unauthorized: You can only update your own data.',
+        });
+      }
+  
+      // Update the user in the database
+      const sqlStatement = `
+        UPDATE user 
+        SET 
+          firstName = ?,
+          lastName = ?,
+          isActive = ?,
+          emailAdress = ?,
+          password = ?,
+          phoneNumber = ?,
+          street = ?,
+          city = ?
+        WHERE
+          id = ?
+      `;
+  
+      const updatedUserValues = [
+        updatedData.firstName,
+        updatedData.lastName,
+        updatedData.isActive,
+        updatedData.emailAdress,
+        updatedData.password,
+        updatedData.phoneNumber,
+        updatedData.street,
+        updatedData.city,
+        userId,
+      ];
+  
+      pool.getConnection((err, connection) => {
+        if (err) {
+          // Handle connection error
+          return next({
+            status: 500,
+            message: 'Failed to get a database connection.',
+          });
+        }
+  
+        connection.query(sqlStatement, updatedUserValues, (error, results, fields) => {
+          connection.release(); // Release the connection after the query
+  
+          if (error) {
+            // Handle query execution error
+            return next({
+              status: 409,
+              message: 'Failed to update user.',
+            });
+          }
+  
+          if (results.affectedRows > 0) {
+            // User updated successfully
+            res.status(200).json({
+              status: 200,
+              message: 'User updated successfully',
+              data: updatedData,
+            });
+          } else {
+            // User not found
+            res.status(404).json({
+              status: 404,
+              message: 'User not found',
+            });
+          }
+        });
+      });
+    });
+  },
+  
   
   // UC-206 Verwijderen van user
   deleteUser: (req, res) => {
