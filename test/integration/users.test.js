@@ -698,7 +698,7 @@ describe('User Tests', () => {
           let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(401);
-          expect(message).to.equal('Unauthorized: Missing or invalid token');
+          expect(message).to.equal('Authorization header missing!');
           done();
         });
     });
