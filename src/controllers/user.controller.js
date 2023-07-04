@@ -304,6 +304,8 @@ const userController = {
     const token = req.headers.authorization.split(' ')[1]; // the token is sent in the request headers as "Authorization"
     jwt.verify(token, jwtSecretKey, (error, decodedToken) => {
       if (error || decodedToken.userId !== userId) {
+        logger.error("test verif userid: ", userId);
+        logger.error("test verif verif id: ", decodedToken.userId);
         return res.status(403).json({
           status: 403,
           message: 'Forbidden: You are not the owner of this user',
