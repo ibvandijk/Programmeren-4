@@ -202,22 +202,22 @@ describe('User Tests', () => {
       // Insert two users into the database
       const usersData = [
         {
-          firstName: 'John',
-          lastName: 'Doe',
-          emailAdress: 'johndoe@example.com',
-          password: 'Password1!',
-          phoneNumber: '1234567891',
-          street: '123 Street',
-          city: 'City'
+          firstName: "John",
+          lastName: "Doe",
+          emailAdress: "johndoe@example.com",
+          password: "Password1!",
+          phoneNumber: "1234567891",
+          street: "123 Street",
+          city: "City"
         },
         {
-          firstName: 'Jane',
-          lastName: 'Smith',
-          emailAdress: 'janesmith@example.com',
-          password: 'Password2!',
-          phoneNumber: '1987654321',
-          street: '456 Street',
-          city: 'Town'
+          firstName: "Jane",
+          lastName: "Smith",
+          emailAdress: "janesmith@example.com",
+          password: "Password2!",
+          phoneNumber: "1987654321",
+          street: "456 Street",
+          city: "Town"
         }
       ];
 
