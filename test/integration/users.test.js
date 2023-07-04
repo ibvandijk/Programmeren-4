@@ -622,11 +622,11 @@ describe('User Tests', () => {
         city: 'Town'
       };
 
-      const token = jwt.sign({ userId: userId }, jwtSecretKey)
+      const token2 = jwt.sign({ userId: userId }, jwtSecretKey)
 
       chai.request(server)
         .put(`/api/user/${userId}`)
-        .set('Authorization', `Bearer ${token}`)
+        .set('Authorization', `Bearer ${token2}`)
         .send(updatedUserData)
         .end((err, res) => {
           res.should.be.an('object');
