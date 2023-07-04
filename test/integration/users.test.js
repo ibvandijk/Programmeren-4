@@ -174,632 +174,632 @@ describe('User Tests', () => {
   });
   // ------ UC-201 Registreren -----
 
-  // UC-202 Opvragen van overzicht van users
-  describe('UC-202 Opvragen van overzicht van users', () => {
-    beforeEach((done) => {
-      logger.debug('beforeEach called');
-      pool.getConnection(function (err, conn) {
-        if (err) throw err;
-        conn.query(
-          'ALTER TABLE `user` AUTO_INCREMENT = 1;',
-          function (error, result, fields) {
-            conn.query(
-              CLEAR_USERS_TABLE,
-              function (error, results, fields) {
-                conn.release();
-                if (error) throw error;
-                logger.debug('beforeEach done');
-                done();
-              }
-            );
-          }
-        );
-      });
-    });
+//   // UC-202 Opvragen van overzicht van users
+//   describe('UC-202 Opvragen van overzicht van users', () => {
+//     beforeEach((done) => {
+//       logger.debug('beforeEach called');
+//       pool.getConnection(function (err, conn) {
+//         if (err) throw err;
+//         conn.query(
+//           'ALTER TABLE `user` AUTO_INCREMENT = 1;',
+//           function (error, result, fields) {
+//             conn.query(
+//               CLEAR_USERS_TABLE,
+//               function (error, results, fields) {
+//                 conn.release();
+//                 if (error) throw error;
+//                 logger.debug('beforeEach done');
+//                 done();
+//               }
+//             );
+//           }
+//         );
+//       });
+//     });
 
-    it('TC-202-1 Toon alle gebruikers (minimaal 2)', (done) => {
-      // Insert two users into the database
-      const usersData = [
-        {
-          firstName: 'John',
-          lastName: 'Doe',
-          emailAdress: 'johndoe@example.com',
-          password: 'Password1!',
-          phoneNumber: '123456789',
-          street: '123 Street',
-          city: 'City'
-        },
-        {
-          firstName: 'Jane',
-          lastName: 'Smith',
-          emailAdress: 'janesmith@example.com',
-          password: 'Password2!',
-          phoneNumber: '987654321',
-          street: '456 Street',
-          city: 'Town'
-        }
-      ];
+//     it('TC-202-1 Toon alle gebruikers (minimaal 2)', (done) => {
+//       // Insert two users into the database
+//       const usersData = [
+//         {
+//           firstName: 'John',
+//           lastName: 'Doe',
+//           emailAdress: 'johndoe@example.com',
+//           password: 'Password1!',
+//           phoneNumber: '123456789',
+//           street: '123 Street',
+//           city: 'City'
+//         },
+//         {
+//           firstName: 'Jane',
+//           lastName: 'Smith',
+//           emailAdress: 'janesmith@example.com',
+//           password: 'Password2!',
+//           phoneNumber: '987654321',
+//           street: '456 Street',
+//           city: 'Town'
+//         }
+//       ];
 
-      userController.createUser(usersData[0], () => {
-        userController.createUser(usersData[1], () => {
-          chai.request(server)
-            .get('/api/user')
-            .end((err, res) => {
-              res.should.be.an('object');
-              let { status, message, data } = res.body;
-              // Verify that the response status, message, and data are correct
-              expect(status).to.equal(200);
-              expect(message).to.equal('Users retrieved successfully');
-              expect(data).to.be.an('array');
-              expect(data.length).to.be.at.least(2);
-              done();
-            });
-        });
-      });
-    });
+//       userController.createUser(usersData[0], () => {
+//         userController.createUser(usersData[1], () => {
+//           chai.request(server)
+//             .get('/api/user')
+//             .end((err, res) => {
+//               res.should.be.an('object');
+//               let { status, message, data } = res.body;
+//               // Verify that the response status, message, and data are correct
+//               expect(status).to.equal(200);
+//               expect(message).to.equal('Users retrieved successfully');
+//               expect(data).to.be.an('array');
+//               expect(data.length).to.be.at.least(2);
+//               done();
+//             });
+//         });
+//       });
+//     });
 
-    it('TC-202-2 Toon gebruikers met zoekterm op niet-bestaande velden', (done) => {
-      const searchTerm = 'invalidField';
+//     it('TC-202-2 Toon gebruikers met zoekterm op niet-bestaande velden', (done) => {
+//       const searchTerm = 'invalidField';
 
-      chai.request(server)
-        .get(`/api/user?search=${searchTerm}`)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message, data } = res.body;
-          // Verify that the response status, message, and data are correct
-          expect(status).to.equal(200);
-          expect(message).to.equal('Users retrieved successfully');
-          expect(data).to.be.an('array');
-          expect(data.length).to.equal(0);
-          done();
-        });
-    });
+//       chai.request(server)
+//         .get(`/api/user?search=${searchTerm}`)
+//         .end((err, res) => {
+//           res.should.be.an('object');
+//           let { status, message, data } = res.body;
+//           // Verify that the response status, message, and data are correct
+//           expect(status).to.equal(200);
+//           expect(message).to.equal('Users retrieved successfully');
+//           expect(data).to.be.an('array');
+//           expect(data.length).to.equal(0);
+//           done();
+//         });
+//     });
 
-    it('TC-202-3 Toon gebruikers met gebruik van de zoekterm op het veld "isActive"=false', (done) => {
-      const searchTerm = 'isActive:false';
+//     it('TC-202-3 Toon gebruikers met gebruik van de zoekterm op het veld "isActive"=false', (done) => {
+//       const searchTerm = 'isActive:false';
 
-      chai.request(server)
-        .get(`/api/user?search=${searchTerm}`)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message, data } = res.body;
-          // Verify that the response status, message, and data are correct
-          expect(status).to.equal(200);
-          expect(message).to.equal('Users retrieved successfully');
-          expect(data).to.be.an('array');
-          // Assuming there are no inactive users in the database
-          expect(data.length).to.equal(0);
-          done();
-        });
-    });
+//       chai.request(server)
+//         .get(`/api/user?search=${searchTerm}`)
+//         .end((err, res) => {
+//           res.should.be.an('object');
+//           let { status, message, data } = res.body;
+//           // Verify that the response status, message, and data are correct
+//           expect(status).to.equal(200);
+//           expect(message).to.equal('Users retrieved successfully');
+//           expect(data).to.be.an('array');
+//           // Assuming there are no inactive users in the database
+//           expect(data.length).to.equal(0);
+//           done();
+//         });
+//     });
 
-    it('TC-202-4 Toon gebruikers met gebruik van de zoekterm op het veld "isActive"=true', (done) => {
-      const searchTerm = 'isActive:true';
+//     it('TC-202-4 Toon gebruikers met gebruik van de zoekterm op het veld "isActive"=true', (done) => {
+//       const searchTerm = 'isActive:true';
 
-      chai.request(server)
-        .get(`/api/user?search=${searchTerm}`)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message, data } = res.body;
-          // Verify that the response status, message, and data are correct
-          expect(status).to.equal(200);
-          expect(message).to.equal('Users retrieved successfully');
-          expect(data).to.be.an('array');
-          // Assuming there are no active users in the database
-          expect(data.length).to.equal(0);
-          done();
-        });
-    });
+//       chai.request(server)
+//         .get(`/api/user?search=${searchTerm}`)
+//         .end((err, res) => {
+//           res.should.be.an('object');
+//           let { status, message, data } = res.body;
+//           // Verify that the response status, message, and data are correct
+//           expect(status).to.equal(200);
+//           expect(message).to.equal('Users retrieved successfully');
+//           expect(data).to.be.an('array');
+//           // Assuming there are no active users in the database
+//           expect(data.length).to.equal(0);
+//           done();
+//         });
+//     });
 
-    it('TC-202-5 Toon gebruikers met zoektermen op bestaande velden (max op 2 velden filteren)', (done) => {
-      const searchTerm1 = 'firstName:John';
-      const searchTerm2 = 'lastName:Doe';
+//     it('TC-202-5 Toon gebruikers met zoektermen op bestaande velden (max op 2 velden filteren)', (done) => {
+//       const searchTerm1 = 'firstName:John';
+//       const searchTerm2 = 'lastName:Doe';
 
-      chai.request(server)
-        .get(`/api/user?search=${searchTerm1}&search=${searchTerm2}`)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message, data } = res.body;
-          // Verify that the response status, message, and data are correct
-          expect(status).to.equal(200);
-          expect(message).to.equal('Users retrieved successfully');
-          expect(data).to.be.an('array');
-          expect(data.length).to.be.at.least(1);
-          done();
-        });
-    });
-  });
-  // ------ UC-202 Opvragen van overzicht van users -----
+//       chai.request(server)
+//         .get(`/api/user?search=${searchTerm1}&search=${searchTerm2}`)
+//         .end((err, res) => {
+//           res.should.be.an('object');
+//           let { status, message, data } = res.body;
+//           // Verify that the response status, message, and data are correct
+//           expect(status).to.equal(200);
+//           expect(message).to.equal('Users retrieved successfully');
+//           expect(data).to.be.an('array');
+//           expect(data.length).to.be.at.least(1);
+//           done();
+//         });
+//     });
+//   });
+//   // ------ UC-202 Opvragen van overzicht van users -----
 
-  // UC-203 Opvragen van gebruikersprofiel
-  describe('UC-203 Opvragen van gebruikersprofiel', () => {
-    let token = '';
+//   // UC-203 Opvragen van gebruikersprofiel
+//   describe('UC-203 Opvragen van gebruikersprofiel', () => {
+//     let token = '';
 
-    beforeEach((done) => {
-      logger.debug('beforeEach called');
-      pool.getConnection(function (err, conn) {
-        if (err) throw err;
-        conn.query(
-          'ALTER TABLE `user` AUTO_INCREMENT = 1;',
-          function (error, result, fields) {
-            conn.query(
-              CLEAR_USERS_TABLE,
-              function (error, results, fields) {
-                // Create a user for testing
-                const userData = {
-                  firstName: 'John',
-                  lastName: 'Doe',
-                  emailAdress: 'johndoe@example.com',
-                  password: 'Password1!',
-                  phoneNumber: '123456789',
-                  street: '123 Street',
-                  city: 'City'
-                };
+//     beforeEach((done) => {
+//       logger.debug('beforeEach called');
+//       pool.getConnection(function (err, conn) {
+//         if (err) throw err;
+//         conn.query(
+//           'ALTER TABLE `user` AUTO_INCREMENT = 1;',
+//           function (error, result, fields) {
+//             conn.query(
+//               CLEAR_USERS_TABLE,
+//               function (error, results, fields) {
+//                 // Create a user for testing
+//                 const userData = {
+//                   firstName: 'John',
+//                   lastName: 'Doe',
+//                   emailAdress: 'johndoe@example.com',
+//                   password: 'Password1!',
+//                   phoneNumber: '123456789',
+//                   street: '123 Street',
+//                   city: 'City'
+//                 };
 
-                userController.createUser(userData, (error, result) => {
-                  // Generate a token for the user
-                  token = jwt.sign({ userId: result.insertId }, jwtSecretKey);
+//                 userController.createUser(userData, (error, result) => {
+//                   // Generate a token for the user
+//                   token = jwt.sign({ userId: result.insertId }, jwtSecretKey);
 
-                  conn.release();
-                  if (error) throw error;
-                  logger.debug('beforeEach done');
-                  done();
-                });
-              }
-            );
-          }
-        );
-      });
-    });
+//                   conn.release();
+//                   if (error) throw error;
+//                   logger.debug('beforeEach done');
+//                   done();
+//                 });
+//               }
+//             );
+//           }
+//         );
+//       });
+//     });
 
-    it('TC-203-1 Ongeldig token', (done) => {
-      chai.request(server)
-        .get('/api/user/profile')
-        .set('Authorization', 'Bearer invalidtoken')
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message } = res.body;
-          // Verify that the response status and error message are correct
-          expect(status).to.equal(401);
-          expect(message).to.equal('Invalid token');
-          done();
-        });
-    });
+//     it('TC-203-1 Ongeldig token', (done) => {
+//       chai.request(server)
+//         .get('/api/user/profile')
+//         .set('Authorization', 'Bearer invalidtoken')
+//         .end((err, res) => {
+//           res.should.be.an('object');
+//           let { status, message } = res.body;
+//           // Verify that the response status and error message are correct
+//           expect(status).to.equal(401);
+//           expect(message).to.equal('Invalid token');
+//           done();
+//         });
+//     });
 
-    it('TC-203-2 Gebruiker is ingelogd met geldig token', (done) => {
-      chai.request(server)
-        .get('/api/user/profile')
-        .set('Authorization', `Bearer ${token}`)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message, data } = res.body;
-          // Verify that the response status, message, and data are correct
-          expect(status).to.equal(200);
-          expect(message).to.equal('User profile retrieved successfully');
-          expect(data).to.be.an('object');
-          expect(data.firstName).to.equal('John');
-          expect(data.lastName).to.equal('Doe');
-          expect(data.emailAdress).to.equal('johndoe@example.com');
-          expect(data.phoneNumber).to.equal('123456789');
-          expect(data.street).to.equal('123 Street');
-          expect(data.city).to.equal('City');
-          done();
-        });
-    });
-  });
-  // ----- UC-203 Opvragen van gebruikersprofiel -----
+//     it('TC-203-2 Gebruiker is ingelogd met geldig token', (done) => {
+//       chai.request(server)
+//         .get('/api/user/profile')
+//         .set('Authorization', `Bearer ${token}`)
+//         .end((err, res) => {
+//           res.should.be.an('object');
+//           let { status, message, data } = res.body;
+//           // Verify that the response status, message, and data are correct
+//           expect(status).to.equal(200);
+//           expect(message).to.equal('User profile retrieved successfully');
+//           expect(data).to.be.an('object');
+//           expect(data.firstName).to.equal('John');
+//           expect(data.lastName).to.equal('Doe');
+//           expect(data.emailAdress).to.equal('johndoe@example.com');
+//           expect(data.phoneNumber).to.equal('123456789');
+//           expect(data.street).to.equal('123 Street');
+//           expect(data.city).to.equal('City');
+//           done();
+//         });
+//     });
+//   });
+//   // ----- UC-203 Opvragen van gebruikersprofiel -----
 
-  // UC-204 Opvragen van usergegevens bij ID
-  describe('UC-204 Opvragen van usergegevens bij ID', () => {
-    let token = '';
+//   // UC-204 Opvragen van usergegevens bij ID
+//   describe('UC-204 Opvragen van usergegevens bij ID', () => {
+//     let token = '';
 
-    beforeEach((done) => {
-      logger.debug('beforeEach called');
-      pool.getConnection(function (err, conn) {
-        if (err) throw err;
-        conn.query(
-          'ALTER TABLE `user` AUTO_INCREMENT = 1;',
-          function (error, result, fields) {
-            conn.query(
-              CLEAR_USERS_TABLE,
-              function (error, results, fields) {
-                // Create a user for testing
-                const userData = {
-                  firstName: 'John',
-                  lastName: 'Doe',
-                  emailAdress: 'johndoe@example.com',
-                  password: 'Password1!',
-                  phoneNumber: '123456789',
-                  street: '123 Street',
-                  city: 'City'
-                };
+//     beforeEach((done) => {
+//       logger.debug('beforeEach called');
+//       pool.getConnection(function (err, conn) {
+//         if (err) throw err;
+//         conn.query(
+//           'ALTER TABLE `user` AUTO_INCREMENT = 1;',
+//           function (error, result, fields) {
+//             conn.query(
+//               CLEAR_USERS_TABLE,
+//               function (error, results, fields) {
+//                 // Create a user for testing
+//                 const userData = {
+//                   firstName: 'John',
+//                   lastName: 'Doe',
+//                   emailAdress: 'johndoe@example.com',
+//                   password: 'Password1!',
+//                   phoneNumber: '123456789',
+//                   street: '123 Street',
+//                   city: 'City'
+//                 };
 
-                userController.createUser(userData, (error, result) => {
-                  // Generate a token for the user
-                  token = jwt.sign({ userId: result.insertId }, jwtSecretKey);
+//                 userController.createUser(userData, (error, result) => {
+//                   // Generate a token for the user
+//                   token = jwt.sign({ userId: result.insertId }, jwtSecretKey);
 
-                  conn.release();
-                  if (error) throw error;
-                  logger.debug('beforeEach done');
-                  done();
-                });
-              }
-            );
-          }
-        );
-      });
-    });
+//                   conn.release();
+//                   if (error) throw error;
+//                   logger.debug('beforeEach done');
+//                   done();
+//                 });
+//               }
+//             );
+//           }
+//         );
+//       });
+//     });
 
-    it('TC-204-1 Ongeldig token', (done) => {
-      const userId = 1;
+//     it('TC-204-1 Ongeldig token', (done) => {
+//       const userId = 1;
 
-      chai.request(server)
-        .get(`/api/user/${userId}`)
-        .set('Authorization', 'Bearer invalidtoken')
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message } = res.body;
-          // Verify that the response status and error message are correct
-          expect(status).to.equal(401);
-          expect(message).to.equal('Invalid token');
-          done();
-        });
-    });
+//       chai.request(server)
+//         .get(`/api/user/${userId}`)
+//         .set('Authorization', 'Bearer invalidtoken')
+//         .end((err, res) => {
+//           res.should.be.an('object');
+//           let { status, message } = res.body;
+//           // Verify that the response status and error message are correct
+//           expect(status).to.equal(401);
+//           expect(message).to.equal('Invalid token');
+//           done();
+//         });
+//     });
 
-    it('TC-204-2 Gebruiker-ID bestaat niet', (done) => {
-      const userId = 999;
+//     it('TC-204-2 Gebruiker-ID bestaat niet', (done) => {
+//       const userId = 999;
 
-      chai.request(server)
-        .get(`/api/user/${userId}`)
-        .set('Authorization', `Bearer ${token}`)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message } = res.body;
-          // Verify that the response status and error message are correct
-          expect(status).to.equal(404);
-          expect(message).to.equal('User not found');
-          done();
-        });
-    });
+//       chai.request(server)
+//         .get(`/api/user/${userId}`)
+//         .set('Authorization', `Bearer ${token}`)
+//         .end((err, res) => {
+//           res.should.be.an('object');
+//           let { status, message } = res.body;
+//           // Verify that the response status and error message are correct
+//           expect(status).to.equal(404);
+//           expect(message).to.equal('User not found');
+//           done();
+//         });
+//     });
 
-    it('TC-204-3 Gebruiker-ID bestaat', (done) => {
-      const userId = 1;
+//     it('TC-204-3 Gebruiker-ID bestaat', (done) => {
+//       const userId = 1;
 
-      chai.request(server)
-        .get(`/api/user/${userId}`)
-        .set('Authorization', `Bearer ${token}`)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message, data } = res.body;
-          // Verify that the response status, message, and data are correct
-          expect(status).to.equal(200);
-          expect(message).to.equal('User retrieved successfully');
-          expect(data).to.be.an('object');
-          expect(data.firstName).to.equal('John');
-          expect(data.lastName).to.equal('Doe');
-          expect(data.emailAdress).to.equal('johndoe@example.com');
-          expect(data.phoneNumber).to.equal('123456789');
-          expect(data.street).to.equal('123 Street');
-          expect(data.city).to.equal('City');
-          done();
-        });
-    });
-  });
-  // ----- UC-204 Opvragen van usergegevens bij ID -----
+//       chai.request(server)
+//         .get(`/api/user/${userId}`)
+//         .set('Authorization', `Bearer ${token}`)
+//         .end((err, res) => {
+//           res.should.be.an('object');
+//           let { status, message, data } = res.body;
+//           // Verify that the response status, message, and data are correct
+//           expect(status).to.equal(200);
+//           expect(message).to.equal('User retrieved successfully');
+//           expect(data).to.be.an('object');
+//           expect(data.firstName).to.equal('John');
+//           expect(data.lastName).to.equal('Doe');
+//           expect(data.emailAdress).to.equal('johndoe@example.com');
+//           expect(data.phoneNumber).to.equal('123456789');
+//           expect(data.street).to.equal('123 Street');
+//           expect(data.city).to.equal('City');
+//           done();
+//         });
+//     });
+//   });
+//   // ----- UC-204 Opvragen van usergegevens bij ID -----
 
-  // UC-205 Updaten van usergegevens
-  describe('UC-205 Updaten van usergegevens', () => {
-    let token = '';
+//   // UC-205 Updaten van usergegevens
+//   describe('UC-205 Updaten van usergegevens', () => {
+//     let token = '';
 
-    beforeEach((done) => {
-      logger.debug('beforeEach called');
-      pool.getConnection(function (err, conn) {
-        if (err) throw err;
-        conn.query(
-          'ALTER TABLE `user` AUTO_INCREMENT = 1;',
-          function (error, result, fields) {
-            conn.query(
-              CLEAR_USERS_TABLE,
-              function (error, results, fields) {
-                // Create a user for testing
-                const userData = {
-                  firstName: 'John',
-                  lastName: 'Doe',
-                  emailAdress: 'johndoe@example.com',
-                  password: 'Password1!',
-                  phoneNumber: '123456789',
-                  street: '123 Street',
-                  city: 'City'
-                };
+//     beforeEach((done) => {
+//       logger.debug('beforeEach called');
+//       pool.getConnection(function (err, conn) {
+//         if (err) throw err;
+//         conn.query(
+//           'ALTER TABLE `user` AUTO_INCREMENT = 1;',
+//           function (error, result, fields) {
+//             conn.query(
+//               CLEAR_USERS_TABLE,
+//               function (error, results, fields) {
+//                 // Create a user for testing
+//                 const userData = {
+//                   firstName: 'John',
+//                   lastName: 'Doe',
+//                   emailAdress: 'johndoe@example.com',
+//                   password: 'Password1!',
+//                   phoneNumber: '123456789',
+//                   street: '123 Street',
+//                   city: 'City'
+//                 };
 
-                userController.createUser(userData, (error, result) => {
-                  // Generate a token for the user
-                  token = jwt.sign({ userId: result.insertId }, jwtSecretKey);
+//                 userController.createUser(userData, (error, result) => {
+//                   // Generate a token for the user
+//                   token = jwt.sign({ userId: result.insertId }, jwtSecretKey);
 
-                  conn.release();
-                  if (error) throw error;
-                  logger.debug('beforeEach done');
-                  done();
-                });
-              }
-            );
-          }
-        );
-      });
-    });
+//                   conn.release();
+//                   if (error) throw error;
+//                   logger.debug('beforeEach done');
+//                   done();
+//                 });
+//               }
+//             );
+//           }
+//         );
+//       });
+//     });
 
-    it('TC-205-1 Verplicht veld "emailAdress" ontbreekt', (done) => {
-      const userId = 1;
-      const updatedUserData = {
-        firstName: 'John',
-        lastName: 'Doe',
-        password: 'Password2!',
-        phoneNumber: '987654321',
-        street: '456 Street',
-        city: 'Town'
-      };
+//     it('TC-205-1 Verplicht veld "emailAdress" ontbreekt', (done) => {
+//       const userId = 1;
+//       const updatedUserData = {
+//         firstName: 'John',
+//         lastName: 'Doe',
+//         password: 'Password2!',
+//         phoneNumber: '987654321',
+//         street: '456 Street',
+//         city: 'Town'
+//       };
 
-      chai.request(server)
-        .put(`/api/user/${userId}`)
-        .set('Authorization', `Bearer ${token}`)
-        .send(updatedUserData)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message } = res.body;
-          // Verify that the response status and error message are correct
-          expect(status).to.equal(400);
-          expect(message).to.equal('Email address is required');
-          done();
-        });
-    });
+//       chai.request(server)
+//         .put(`/api/user/${userId}`)
+//         .set('Authorization', `Bearer ${token}`)
+//         .send(updatedUserData)
+//         .end((err, res) => {
+//           res.should.be.an('object');
+//           let { status, message } = res.body;
+//           // Verify that the response status and error message are correct
+//           expect(status).to.equal(400);
+//           expect(message).to.equal('Email address is required');
+//           done();
+//         });
+//     });
 
-    it('TC-205-2 De gebruiker is niet de eigenaar van de data', (done) => {
-      const userId = 1;
-      const updatedUserData = {
-        firstName: 'John',
-        lastName: 'Doe',
-        emailAdress: 'johndoe@example.com',
-        password: 'Password2!',
-        phoneNumber: '987654321',
-        street: '456 Street',
-        city: 'Town'
-      };
+//     it('TC-205-2 De gebruiker is niet de eigenaar van de data', (done) => {
+//       const userId = 1;
+//       const updatedUserData = {
+//         firstName: 'John',
+//         lastName: 'Doe',
+//         emailAdress: 'johndoe@example.com',
+//         password: 'Password2!',
+//         phoneNumber: '987654321',
+//         street: '456 Street',
+//         city: 'Town'
+//       };
 
-      // Generate a token for a different user
-      const differentUserToken = jwt.sign({ userId: 999 }, jwtSecretKey);
+//       // Generate a token for a different user
+//       const differentUserToken = jwt.sign({ userId: 999 }, jwtSecretKey);
 
-      chai.request(server)
-        .put(`/api/user/${userId}`)
-        .set('Authorization', `Bearer ${differentUserToken}`)
-        .send(updatedUserData)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message } = res.body;
-          // Verify that the response status and error message are correct
-          expect(status).to.equal(403);
-          expect(message).to.equal('Forbidden: You are not the owner of this user');
-          done();
-        });
-    });
+//       chai.request(server)
+//         .put(`/api/user/${userId}`)
+//         .set('Authorization', `Bearer ${differentUserToken}`)
+//         .send(updatedUserData)
+//         .end((err, res) => {
+//           res.should.be.an('object');
+//           let { status, message } = res.body;
+//           // Verify that the response status and error message are correct
+//           expect(status).to.equal(403);
+//           expect(message).to.equal('Forbidden: You are not the owner of this user');
+//           done();
+//         });
+//     });
 
-    it('TC-205-3 Niet-valide telefoonnummer', (done) => {
-      const userId = 1;
-      const updatedUserData = {
-        firstName: 'John',
-        lastName: 'Doe',
-        emailAdress: 'johndoe@example.com',
-        password: 'Password2!',
-        phoneNumber: '123',
-        street: '456 Street',
-        city: 'Town'
-      };
+//     it('TC-205-3 Niet-valide telefoonnummer', (done) => {
+//       const userId = 1;
+//       const updatedUserData = {
+//         firstName: 'John',
+//         lastName: 'Doe',
+//         emailAdress: 'johndoe@example.com',
+//         password: 'Password2!',
+//         phoneNumber: '123',
+//         street: '456 Street',
+//         city: 'Town'
+//       };
 
-      chai.request(server)
-        .put(`/api/user/${userId}`)
-        .set('Authorization', `Bearer ${token}`)
-        .send(updatedUserData)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message } = res.body;
-          // Verify that the response status and error message are correct
-          expect(status).to.equal(400);
-          expect(message).to.equal('Phone number is not valid');
-          done();
-        });
-    });
+//       chai.request(server)
+//         .put(`/api/user/${userId}`)
+//         .set('Authorization', `Bearer ${token}`)
+//         .send(updatedUserData)
+//         .end((err, res) => {
+//           res.should.be.an('object');
+//           let { status, message } = res.body;
+//           // Verify that the response status and error message are correct
+//           expect(status).to.equal(400);
+//           expect(message).to.equal('Phone number is not valid');
+//           done();
+//         });
+//     });
 
-    it('TC-205-4 Gebruiker bestaat niet', (done) => {
-      const userId = 999;
-      const updatedUserData = {
-        firstName: 'John',
-        lastName: 'Doe',
-        emailAdress: 'johndoe@example.com',
-        password: 'Password2!',
-        phoneNumber: '987654321',
-        street: '456 Street',
-        city: 'Town'
-      };
+//     it('TC-205-4 Gebruiker bestaat niet', (done) => {
+//       const userId = 999;
+//       const updatedUserData = {
+//         firstName: 'John',
+//         lastName: 'Doe',
+//         emailAdress: 'johndoe@example.com',
+//         password: 'Password2!',
+//         phoneNumber: '987654321',
+//         street: '456 Street',
+//         city: 'Town'
+//       };
 
-      chai.request(server)
-        .put(`/api/user/${userId}`)
-        .set('Authorization', `Bearer ${token}`)
-        .send(updatedUserData)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message } = res.body;
-          // Verify that the response status and error message are correct
-          expect(status).to.equal(404);
-          expect(message).to.equal('User not found');
-          done();
-        });
-    });
+//       chai.request(server)
+//         .put(`/api/user/${userId}`)
+//         .set('Authorization', `Bearer ${token}`)
+//         .send(updatedUserData)
+//         .end((err, res) => {
+//           res.should.be.an('object');
+//           let { status, message } = res.body;
+//           // Verify that the response status and error message are correct
+//           expect(status).to.equal(404);
+//           expect(message).to.equal('User not found');
+//           done();
+//         });
+//     });
 
-    it('TC-205-5 Niet ingelogd', (done) => {
-      const userId = 1;
-      const updatedUserData = {
-        firstName: 'John',
-        lastName: 'Doe',
-        emailAdress: 'johndoe@example.com',
-        password: 'Password2!',
-        phoneNumber: '987654321',
-        street: '456 Street',
-        city: 'Town'
-      };
+//     it('TC-205-5 Niet ingelogd', (done) => {
+//       const userId = 1;
+//       const updatedUserData = {
+//         firstName: 'John',
+//         lastName: 'Doe',
+//         emailAdress: 'johndoe@example.com',
+//         password: 'Password2!',
+//         phoneNumber: '987654321',
+//         street: '456 Street',
+//         city: 'Town'
+//       };
 
-      chai.request(server)
-        .put(`/api/user/${userId}`)
-        .send(updatedUserData)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message } = res.body;
-          // Verify that the response status and error message are correct
-          expect(status).to.equal(401);
-          expect(message).to.equal('Unauthorized: Missing or invalid token');
-          done();
-        });
-    });
+//       chai.request(server)
+//         .put(`/api/user/${userId}`)
+//         .send(updatedUserData)
+//         .end((err, res) => {
+//           res.should.be.an('object');
+//           let { status, message } = res.body;
+//           // Verify that the response status and error message are correct
+//           expect(status).to.equal(401);
+//           expect(message).to.equal('Unauthorized: Missing or invalid token');
+//           done();
+//         });
+//     });
 
-    it('TC-205-6 Gebruiker succesvol gewijzigd', (done) => {
-      const userId = 1;
-      const updatedUserData = {
-        firstName: 'Jane',
-        lastName: 'Doe',
-        emailAdress: 'janedoe@example.com',
-        password: 'Password2!',
-        phoneNumber: '987654321',
-        street: '456 Street',
-        city: 'Town'
-      };
+//     it('TC-205-6 Gebruiker succesvol gewijzigd', (done) => {
+//       const userId = 1;
+//       const updatedUserData = {
+//         firstName: 'Jane',
+//         lastName: 'Doe',
+//         emailAdress: 'janedoe@example.com',
+//         password: 'Password2!',
+//         phoneNumber: '987654321',
+//         street: '456 Street',
+//         city: 'Town'
+//       };
 
-      chai.request(server)
-        .put(`/api/user/${userId}`)
-        .set('Authorization', `Bearer ${token}`)
-        .send(updatedUserData)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message, data } = res.body;
-          // Verify that the response status, message, and data are correct
-          expect(status).to.equal(200);
-          expect(message).to.equal('User updated successfully');
-          expect(data).to.be.an('object');
-          expect(data.firstName).to.equal('Jane');
-          expect(data.lastName).to.equal('Doe');
-          expect(data.emailAdress).to.equal('janedoe@example.com');
-          expect(data.phoneNumber).to.equal('987654321');
-          expect(data.street).to.equal('456 Street');
-          expect(data.city).to.equal('Town');
-          done();
-        });
-    });
-  });
-  // ----- UC-205 Updaten van usergegevens -----
+//       chai.request(server)
+//         .put(`/api/user/${userId}`)
+//         .set('Authorization', `Bearer ${token}`)
+//         .send(updatedUserData)
+//         .end((err, res) => {
+//           res.should.be.an('object');
+//           let { status, message, data } = res.body;
+//           // Verify that the response status, message, and data are correct
+//           expect(status).to.equal(200);
+//           expect(message).to.equal('User updated successfully');
+//           expect(data).to.be.an('object');
+//           expect(data.firstName).to.equal('Jane');
+//           expect(data.lastName).to.equal('Doe');
+//           expect(data.emailAdress).to.equal('janedoe@example.com');
+//           expect(data.phoneNumber).to.equal('987654321');
+//           expect(data.street).to.equal('456 Street');
+//           expect(data.city).to.equal('Town');
+//           done();
+//         });
+//     });
+//   });
+//   // ----- UC-205 Updaten van usergegevens -----
 
-  // UC-206 Verwijderen van user
-  describe('UC-206 Verwijderen van user', () => {
-    let token = '';
+//   // UC-206 Verwijderen van user
+//   describe('UC-206 Verwijderen van user', () => {
+//     let token = '';
 
-    beforeEach((done) => {
-      logger.debug('beforeEach called');
-      pool.getConnection(function (err, conn) {
-        if (err) throw err;
-        conn.query(
-          'ALTER TABLE `user` AUTO_INCREMENT = 1;',
-          function (error, result, fields) {
-            conn.query(
-              CLEAR_USERS_TABLE,
-              function (error, results, fields) {
-                // Create a user for testing
-                const userData = {
-                  firstName: 'John',
-                  lastName: 'Doe',
-                  emailAdress: 'johndoe@example.com',
-                  password: 'Password1!',
-                  phoneNumber: '123456789',
-                  street: '123 Street',
-                  city: 'City'
-                };
+//     beforeEach((done) => {
+//       logger.debug('beforeEach called');
+//       pool.getConnection(function (err, conn) {
+//         if (err) throw err;
+//         conn.query(
+//           'ALTER TABLE `user` AUTO_INCREMENT = 1;',
+//           function (error, result, fields) {
+//             conn.query(
+//               CLEAR_USERS_TABLE,
+//               function (error, results, fields) {
+//                 // Create a user for testing
+//                 const userData = {
+//                   firstName: 'John',
+//                   lastName: 'Doe',
+//                   emailAdress: 'johndoe@example.com',
+//                   password: 'Password1!',
+//                   phoneNumber: '123456789',
+//                   street: '123 Street',
+//                   city: 'City'
+//                 };
 
-                userController.createUser(userData, (error, result) => {
-                  // Generate a token for the user
-                  token = jwt.sign({ userId: result.insertId }, jwtSecretKey);
+//                 userController.createUser(userData, (error, result) => {
+//                   // Generate a token for the user
+//                   token = jwt.sign({ userId: result.insertId }, jwtSecretKey);
 
-                  conn.release();
-                  if (error) throw error;
-                  logger.debug('beforeEach done');
-                  done();
-                });
-              }
-            );
-          }
-        );
-      });
-    });
+//                   conn.release();
+//                   if (error) throw error;
+//                   logger.debug('beforeEach done');
+//                   done();
+//                 });
+//               }
+//             );
+//           }
+//         );
+//       });
+//     });
 
-    it('TC-206-1 Gebruiker bestaat niet', (done) => {
-      const userId = 999;
+//     it('TC-206-1 Gebruiker bestaat niet', (done) => {
+//       const userId = 999;
 
-      chai.request(server)
-        .delete(`/api/user/${userId}`)
-        .set('Authorization', `Bearer ${token}`)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message } = res.body;
-          // Verify that the response status and error message are correct
-          expect(status).to.equal(404);
-          expect(message).to.equal('User not found');
-          done();
-        });
-    });
+//       chai.request(server)
+//         .delete(`/api/user/${userId}`)
+//         .set('Authorization', `Bearer ${token}`)
+//         .end((err, res) => {
+//           res.should.be.an('object');
+//           let { status, message } = res.body;
+//           // Verify that the response status and error message are correct
+//           expect(status).to.equal(404);
+//           expect(message).to.equal('User not found');
+//           done();
+//         });
+//     });
 
-    it('TC-206-2 Gebruiker is niet ingelogd', (done) => {
-      const userId = 1;
+//     it('TC-206-2 Gebruiker is niet ingelogd', (done) => {
+//       const userId = 1;
 
-      chai.request(server)
-        .delete(`/api/user/${userId}`)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message } = res.body;
-          // Verify that the response status and error message are correct
-          expect(status).to.equal(401);
-          expect(message).to.equal('Unauthorized: Missing or invalid token');
-          done();
-        });
-    });
+//       chai.request(server)
+//         .delete(`/api/user/${userId}`)
+//         .end((err, res) => {
+//           res.should.be.an('object');
+//           let { status, message } = res.body;
+//           // Verify that the response status and error message are correct
+//           expect(status).to.equal(401);
+//           expect(message).to.equal('Unauthorized: Missing or invalid token');
+//           done();
+//         });
+//     });
 
-    it('TC-206-3 De gebruiker is niet de eigenaar van de data', (done) => {
-      const userId = 1;
+//     it('TC-206-3 De gebruiker is niet de eigenaar van de data', (done) => {
+//       const userId = 1;
 
-      // Generate a token for a different user
-      const differentUserToken = jwt.sign({ userId: 999 }, jwtSecretKey);
+//       // Generate a token for a different user
+//       const differentUserToken = jwt.sign({ userId: 999 }, jwtSecretKey);
 
-      chai.request(server)
-        .delete(`/api/user/${userId}`)
-        .set('Authorization', `Bearer ${differentUserToken}`)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message } = res.body;
-          // Verify that the response status and error message are correct
-          expect(status).to.equal(403);
-          expect(message).to.equal('Forbidden: You are not the owner of this user');
-          done();
-        });
-    });
+//       chai.request(server)
+//         .delete(`/api/user/${userId}`)
+//         .set('Authorization', `Bearer ${differentUserToken}`)
+//         .end((err, res) => {
+//           res.should.be.an('object');
+//           let { status, message } = res.body;
+//           // Verify that the response status and error message are correct
+//           expect(status).to.equal(403);
+//           expect(message).to.equal('Forbidden: You are not the owner of this user');
+//           done();
+//         });
+//     });
 
-    it('TC-206-4 Gebruiker succesvol verwijderd', (done) => {
-      const userId = 1;
+//     it('TC-206-4 Gebruiker succesvol verwijderd', (done) => {
+//       const userId = 1;
 
-      chai.request(server)
-        .delete(`/api/user/${userId}`)
-        .set('Authorization', `Bearer ${token}`)
-        .end((err, res) => {
-          res.should.be.an('object');
-          let { status, message } = res.body;
-          // Verify that the response status and message are correct
-          expect(status).to.equal(200);
-          expect(message).to.equal('User deleted successfully');
-          done();
-        });
-    });
-  });
-  // ----- UC-206 Verwijderen van user -----
+//       chai.request(server)
+//         .delete(`/api/user/${userId}`)
+//         .set('Authorization', `Bearer ${token}`)
+//         .end((err, res) => {
+//           res.should.be.an('object');
+//           let { status, message } = res.body;
+//           // Verify that the response status and message are correct
+//           expect(status).to.equal(200);
+//           expect(message).to.equal('User deleted successfully');
+//           done();
+//         });
+//     });
+//   });
+//   // ----- UC-206 Verwijderen van user -----
 });
