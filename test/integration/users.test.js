@@ -506,23 +506,20 @@ describe('User Tests', () => {
     });
 
     it('TC-205-2 De gebruiker is niet de eigenaar van de data', (done) => {
-      const userId = 99;
+      const userId = 999;
       const updatedUserData = {
         firstName: 'John',
         lastName: 'Doe',
         emailAdress: 'johndoe@example.com',
         password: 'Password2!',
-        phoneNumber: '987654321',
+        phoneNumber: '1987654321',
         street: '456 Street',
         city: 'Town'
       };
 
-      // Generate a token for a different user
-      const differentUserToken = jwt.sign({ userId: 999 }, jwtSecretKey);
-
       chai.request(server)
         .put(`/api/user/${userId}`)
-        .set('Authorization', `Bearer ${differentUserToken}`)
+        .set('Authorization', `Bearer ${token}`)
         .send(updatedUserData)
         .end((err, res) => {
           res.should.be.an('object');

@@ -274,7 +274,6 @@ const userController = {
               message: 'User not found'
           });
           }
-          logger.error("this is the looked for user: ",results);
           if (results.length > 0) {
             logger.trace('Found', results.length, 'results');
             res.status(200).json({
@@ -307,7 +306,7 @@ const userController = {
       if (error || decodedToken.userId !== userId) {
         return res.status(403).json({
           status: 403,
-          message: 'Unauthorized: You can only update your own data.',
+          message: 'Forbidden: You are not the owner of this user',
         });
       }
   
