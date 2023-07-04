@@ -249,7 +249,7 @@ const userController = {
   },
   
   // UC-204 Opvragen van usergegevens bij ID
-  getUserProfileById: (req, res) => {
+  getUserProfileById: (req, res, next) => {
     logger.info('getUserProfileById called');
     logger.trace('Show user with user id', req.params.userId);
 
