@@ -122,7 +122,7 @@ describe('User Tests', () => {
         lastName: 'Doe',
         emailAdress: 'johndoe@example.com',
         password: 'Password1!',
-        phoneNumber: '123456789',
+        phoneNumber: '1234567891',
         street: '123 Street',
         city: 'City'
       };
