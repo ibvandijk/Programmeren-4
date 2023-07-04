@@ -60,7 +60,6 @@ describe('UC-101 Inloggen', () => {
 			.post(`/api/login`)
 			.send(loginData)
 			.end((err, res) => {
-                logger.error("testing the res object: ", res);
 				res.should.be.an('object');
 				let { status, result } = res.body;
 				// Verify that the response status and result object are correct
