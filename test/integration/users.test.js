@@ -555,7 +555,7 @@ describe('User Tests', () => {
           let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(400);
-          expect(message).to.equal('Phone number is not valid');
+          expect(message).to.equal('phoneNumber is not valid');
           done();
         });
     });
@@ -567,7 +567,7 @@ describe('User Tests', () => {
         lastName: 'Doe',
         emailAdress: 'johndoe@example.com',
         password: 'Password2!',
-        phoneNumber: '987654321',
+        phoneNumber: '1987654321',
         street: '456 Street',
         city: 'Town'
       };
@@ -593,7 +593,7 @@ describe('User Tests', () => {
         lastName: 'Doe',
         emailAdress: 'johndoe@example.com',
         password: 'Password2!',
-        phoneNumber: '987654321',
+        phoneNumber: '1987654321',
         street: '456 Street',
         city: 'Town'
       };
@@ -618,7 +618,7 @@ describe('User Tests', () => {
         lastName: 'Doe',
         emailAdress: 'janedoe@example.com',
         password: 'Password2!',
-        phoneNumber: '987654321',
+        phoneNumber: '1987654321',
         street: '456 Street',
         city: 'Town'
       };
