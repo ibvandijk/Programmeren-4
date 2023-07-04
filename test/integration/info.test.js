@@ -52,7 +52,7 @@ describe('UC-101 Inloggen', () => {
 
 	it('TC-101-1 Valid login credentials', (done) => {
 		const loginData = {
-			emailAddress: "johndoe@example.com",
+			emailAdress: "johndoe@example.com",
 			password: "secret"
 		};
 
@@ -70,7 +70,7 @@ describe('UC-101 Inloggen', () => {
 				expect(result.user.id).to.equal(1);
 				expect(result.user.firstName).to.equal('John');
 				expect(result.user.lastName).to.equal('Doe');
-				expect(result.user.emailAddress).to.equal('johndoe@example.com');
+				expect(result.user.emailAdress).to.equal('johndoe@example.com');
 				expect(result.user.phoneNumber).to.equal('123456789');
 				expect(result.user.street).to.equal('123 Street');
 				expect(result.user.city).to.equal('City');
@@ -80,7 +80,7 @@ describe('UC-101 Inloggen', () => {
 
 	it('TC-101-2 Incomplete login credentials', (done) => {
 		const loginData = {
-			emailAddress: "johndoe@example.com"
+			emailAdress: "johndoe@example.com"
 		};
 
 		chai.request(server)
@@ -98,7 +98,7 @@ describe('UC-101 Inloggen', () => {
 
 	it('TC-101-3 Invalid login credentials', (done) => {
 		const loginData = {
-			emailAddress: "johndoe@example.com",
+			emailAdress: "johndoe@example.com",
 			password: "wrongpassword"
 		};
 
@@ -117,7 +117,7 @@ describe('UC-101 Inloggen', () => {
 
 	it('TC-101-4 User not found', (done) => {
 		const loginData = {
-			emailAddress: "nonexistent@example.com",
+			emailAdress: "nonexistent@example.com",
 			password: "Password123"
 		};
 
