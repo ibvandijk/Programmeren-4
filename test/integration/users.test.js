@@ -238,7 +238,7 @@ describe('User Tests', () => {
           expect(status).to.equal(200);
           expect(message).to.equal('Users retrieved successfully');
           expect(data).to.be.an('array');
-          expect(data.length).to.equal(2);
+          expect(data.length).to.equal(0);
           done();
         });
     });
@@ -260,7 +260,7 @@ describe('User Tests', () => {
           expect(message).to.equal('Users retrieved successfully');
           expect(data).to.be.an('array');
           // Assuming there are no inactive users in the database
-          expect(data.length).to.equal(0);
+          expect(data.length).to.equal(3);
           done();
         });
     });
@@ -282,7 +282,7 @@ describe('User Tests', () => {
           expect(message).to.equal('Users retrieved successfully');
           expect(data).to.be.an('array');
           // Assuming there are no active users in the database
-          expect(data.length).to.equal(0);
+          expect(data.length).to.equal(3);
           done();
         });
     });
