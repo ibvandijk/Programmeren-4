@@ -357,6 +357,7 @@ const userController = {
             return next({
               status: 409,
               message: 'Failed to update user.',
+              error
             });
           }
   
