@@ -144,7 +144,7 @@ describe('User Tests', () => {
       const userData = {
         firstName: 'John',
         lastName: 'Doe',
-        emailAdress: 'johndoe@example.com',
+        emailAdress: 'johndoe@test.com',
         password: 'Password1!',
         phoneNumber: '1234567891',
         street: '123 Street',
@@ -158,7 +158,7 @@ describe('User Tests', () => {
           res.should.be.an('object');
           let { status, message, result } = res.body;
           logger.error("test body message: ", message);
-          // Verify that the response status, message, and result are correct
+
           expect(status).to.equal(201);
           expect(message).to.equal('User successfully registered');
           expect(result).to.be.an('object');
@@ -170,6 +170,19 @@ describe('User Tests', () => {
           expect(result.city).to.equal(userData.city);
           done();
         });
+    });
+    // Cleanup step to delete the created user after TC-201-5
+    afterEach((done) => {
+        if (this.currentTest.title === 'TC-201-5 Gebruiker succesvol geregistreerd' && createdUserId) {
+        chai.request(server)
+            .delete(`/api/users/${createdUserId}`)
+            .end((err, res) => {
+            res.should.have.status(200);
+            done();
+            });
+        } else {
+        done();
+        }
     });
   });
   // ------ UC-201 Registreren -----
