@@ -198,8 +198,7 @@ describe('User Tests', () => {
 
     it('TC-202-1 Toon alle gebruikers (minimaal 2)', (done) => {
       // Insert two users into the database
-      const usersData = [
-        {
+      const usersData1 ={
           firstName: "John",
           lastName: "Doe",
           emailAdress: "johndoe@example.com",
@@ -207,8 +206,8 @@ describe('User Tests', () => {
           phoneNumber: "1234567891",
           street: "123 Street",
           city: "City"
-        },
-        {
+        };
+        const usersData2 ={
           firstName: "Jane",
           lastName: "Smith",
           emailAdress: "janesmith@example.com",
@@ -216,11 +215,10 @@ describe('User Tests', () => {
           phoneNumber: "1987654321",
           street: "456 Street",
           city: "Town"
-        }
-      ];
+        };
 
-      userController.createUser(usersData[0], () => {
-        userController.createUser(usersData[1], () => {
+      userController.createUser(usersData1, () => {
+        userController.createUser(usersData2, () => {
           chai.request(server)
             .get('/api/user')
             .set(
