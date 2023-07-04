@@ -171,19 +171,6 @@ describe('User Tests', () => {
           done();
         });
     });
-    // Cleanup step to delete the created user after TC-201-5
-    afterEach((done) => {
-        if (this.currentTest.title === 'TC-201-5 Gebruiker succesvol geregistreerd' && createdUserId) {
-        chai.request(server)
-            .delete(`/api/users/${createdUserId}`)
-            .end((err, res) => {
-            res.should.have.status(200);
-            done();
-            });
-        } else {
-        done();
-        }
-    });
   });
   // ------ UC-201 Registreren -----
 
