@@ -85,6 +85,7 @@ const userController = {
         });
       }
 
+      logger.error("datareadout in create: ", req.body)
       // Insert user data into the 'user' table
       conn.query(
         'INSERT INTO user (firstName, lastName, street, city, phoneNumber, emailAdress, password) VALUES (?, ?, ?, ?, ?, ?, ?);',
