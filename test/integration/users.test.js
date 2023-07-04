@@ -133,7 +133,6 @@ describe('User Tests', () => {
         .end((err, res) => {
           res.should.be.an('object');
           let { status, message } = res.body;
-          logger.error("test body message: ", message);
           // Verify that the response status and error message are correct
           expect(status).to.equal(403);
           expect(message).to.equal(`The email address: ${userData.emailAdress} has already been taken!`);
@@ -158,6 +157,7 @@ describe('User Tests', () => {
         .end((err, res) => {
           res.should.be.an('object');
           let { status, message, result } = res.body;
+          logger.error("test body message: ", message);
           // Verify that the response status, message, and result are correct
           expect(status).to.equal(201);
           expect(message).to.equal('User successfully registered');
