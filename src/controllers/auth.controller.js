@@ -46,7 +46,10 @@ const authController = {
 
           // Check if the user exists
           if (results.length === 0) {
-            return res.status(401).json({ message: 'Invalid email address or password' });
+            return next({
+              status: 401,
+              message: 'Invalid email address or password'
+            });
           }
 
           const user = results[0];
@@ -55,7 +58,12 @@ const authController = {
           const token = jwt.sign({ userId: user.id }, jwtSecretKey);
 
           // Return the token to the client
-          res.status(200).json({ token });
+          return next({
+            status: 200,
+            message: 'Successful login',
+            token,
+            user
+          });
         });
       } catch (error) {
         logger.error('Error during login:', error);
