@@ -345,7 +345,7 @@ describe('User Tests', () => {
           let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(401);
-          expect(message).to.equal('Invalid token');
+          expect(message).to.equal('Not authorized');
           done();
         });
     });
