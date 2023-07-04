@@ -57,12 +57,11 @@ describe('User Tests', () => {
       };
 
       chai.request(server)
-        .post('/api/user/register')
+        .post('/api/user')
         .send(userData)
         .end((err, res) => {
           res.should.be.an('object');
           let { status, message } = res.body;
-          // Verify that the response status and error message are correct
           expect(status).to.equal(400);
           expect(message).to.equal('Missing field: emailAddress');
           done();
@@ -81,7 +80,7 @@ describe('User Tests', () => {
       };
 
       chai.request(server)
-        .post('/api/user/register')
+        .post('/api/user')
         .send(userData)
         .end((err, res) => {
           res.should.be.an('object');
@@ -105,7 +104,7 @@ describe('User Tests', () => {
       };
 
       chai.request(server)
-        .post('/api/user/register')
+        .post('/api/user')
         .send(userData)
         .end((err, res) => {
           res.should.be.an('object');
@@ -129,7 +128,7 @@ describe('User Tests', () => {
       };
 
       chai.request(server)
-        .post('/api/user/register')
+        .post('/api/user')
         .send(userData)
         .end((err, res) => {
           res.should.be.an('object');
@@ -153,7 +152,7 @@ describe('User Tests', () => {
       };
 
       chai.request(server)
-        .post('/api/user/register')
+        .post('/api/user')
         .send(userData)
         .end((err, res) => {
           res.should.be.an('object');
