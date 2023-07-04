@@ -21,6 +21,8 @@ chai.use(chaiHttp);
 const CLEAR_USERS_TABLE = 'DELETE IGNORE FROM user;';
 const CLEAR_DB = CLEAR_USERS_TABLE;
 
+const authToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTY4NDY5NzM4NX0.DnCDJuJp5LMVYO4yIbLLMhMPMHcRF2ZVg4qQYZIo--U';
+
 describe('User Tests', () => {
 
   // UC-201 Registreren
@@ -223,6 +225,7 @@ describe('User Tests', () => {
         userController.createUser(usersData[1], () => {
           chai.request(server)
             .get('/api/user')
+            .set('Authorization', `Bearer ${authToken}`)
             .end((err, res) => {
               res.should.be.an('object');
               let { status, message, data } = res.body;
@@ -242,6 +245,7 @@ describe('User Tests', () => {
 
       chai.request(server)
         .get(`/api/user?search=${searchTerm}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .end((err, res) => {
           res.should.be.an('object');
           let { status, message, data } = res.body;
@@ -259,6 +263,7 @@ describe('User Tests', () => {
 
       chai.request(server)
         .get(`/api/user?search=${searchTerm}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .end((err, res) => {
           res.should.be.an('object');
           let { status, message, data } = res.body;
@@ -277,6 +282,7 @@ describe('User Tests', () => {
 
       chai.request(server)
         .get(`/api/user?search=${searchTerm}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .end((err, res) => {
           res.should.be.an('object');
           let { status, message, data } = res.body;
@@ -296,6 +302,7 @@ describe('User Tests', () => {
 
       chai.request(server)
         .get(`/api/user?search=${searchTerm1}&search=${searchTerm2}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .end((err, res) => {
           res.should.be.an('object');
           let { status, message, data } = res.body;
