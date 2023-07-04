@@ -371,48 +371,32 @@ describe('User Tests', () => {
         });
     });
   });
-  ----- UC-203 Opvragen van gebruikersprofiel -----
+  // ----- UC-203 Opvragen van gebruikersprofiel -----
 
   // UC-204 Opvragen van usergegevens bij ID
   describe('UC-204 Opvragen van usergegevens bij ID', () => {
-    let token = '';
+    let token = jwt.sign({ userId: 99 }, jwtSecretKey);
 
     beforeEach((done) => {
-      logger.debug('beforeEach called');
-      pool.getConnection(function (err, conn) {
-        if (err) throw err;
-        conn.query(
-          'ALTER TABLE `user` AUTO_INCREMENT = 1;',
-          function (error, result, fields) {
-            conn.query(
-              CLEAR_USERS_TABLE,
-              function (error, results, fields) {
-                // Create a user for testing
-                const userData = {
-                  firstName: 'John',
-                  lastName: 'Doe',
-                  emailAdress: 'johndoe@example.com',
-                  password: 'Password1!',
-                  phoneNumber: '123456789',
-                  street: '123 Street',
-                  city: 'City'
-                };
-
-                userController.createUser(userData, (error, result) => {
-                  // Generate a token for the user
-                  token = jwt.sign({ userId: result.insertId }, jwtSecretKey);
-
+        logger.debug('beforeEach called');
+        pool.getConnection(function (err, conn) {
+          if (err) throw err;
+          conn.query(
+            'ALTER TABLE `user` AUTO_INCREMENT = 1;',
+            function (error, result, fields) {
+              conn.query(
+                CLEAR_USERS_TABLE + INSERT_USER + INSERT_USER2,
+                function (error, results, fields) {
                   conn.release();
                   if (error) throw error;
                   logger.debug('beforeEach done');
                   done();
-                });
-              }
-            );
-          }
-        );
+                }
+              );
+            }
+          );
+        });
       });
-    });
 
     it('TC-204-1 Ongeldig token', (done) => {
       const userId = 1;
