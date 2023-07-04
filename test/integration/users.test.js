@@ -622,6 +622,8 @@ describe('User Tests', () => {
         city: 'Town'
       };
 
+      const token = jwt.sign({ userId: userId }, jwtSecretKey)
+
       chai.request(server)
         .put(`/api/user/${userId}`)
         .set('Authorization', `Bearer ${token}`)
