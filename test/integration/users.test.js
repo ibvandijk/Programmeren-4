@@ -61,7 +61,7 @@ describe('User Tests', () => {
         .send(userData)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message } = res.body;
+          let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(400);
           expect(message).to.equal('Missing field: emailAddress');
@@ -85,7 +85,7 @@ describe('User Tests', () => {
         .send(userData)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message } = res.body;
+          let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(400);
           expect(message).to.equal('Invalid email address');
@@ -109,7 +109,7 @@ describe('User Tests', () => {
         .send(userData)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message } = res.body;
+          let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(400);
           expect(message).to.equal('Invalid password');
@@ -133,7 +133,7 @@ describe('User Tests', () => {
         .send(userData)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message } = res.body;
+          let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(403);
           expect(message).to.equal('User already exists');
@@ -157,7 +157,7 @@ describe('User Tests', () => {
         .send(userData)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message, result } = res.body;
+          let { status, message, result } = res.body;
           // Verify that the response status, message, and result are correct
           expect(status).to.equal(201);
           expect(message).to.equal('User successfully registered');
@@ -226,7 +226,7 @@ describe('User Tests', () => {
             .get('/api/user')
             .end((err, res) => {
               res.should.be.an('object');
-              const { status, message, data } = res.body;
+              let { status, message, data } = res.body;
               // Verify that the response status, message, and data are correct
               expect(status).to.equal(200);
               expect(message).to.equal('Users retrieved successfully');
@@ -245,7 +245,7 @@ describe('User Tests', () => {
         .get(`/api/user?search=${searchTerm}`)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message, data } = res.body;
+          let { status, message, data } = res.body;
           // Verify that the response status, message, and data are correct
           expect(status).to.equal(200);
           expect(message).to.equal('Users retrieved successfully');
@@ -262,7 +262,7 @@ describe('User Tests', () => {
         .get(`/api/user?search=${searchTerm}`)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message, data } = res.body;
+          let { status, message, data } = res.body;
           // Verify that the response status, message, and data are correct
           expect(status).to.equal(200);
           expect(message).to.equal('Users retrieved successfully');
@@ -280,7 +280,7 @@ describe('User Tests', () => {
         .get(`/api/user?search=${searchTerm}`)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message, data } = res.body;
+          let { status, message, data } = res.body;
           // Verify that the response status, message, and data are correct
           expect(status).to.equal(200);
           expect(message).to.equal('Users retrieved successfully');
@@ -299,7 +299,7 @@ describe('User Tests', () => {
         .get(`/api/user?search=${searchTerm1}&search=${searchTerm2}`)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message, data } = res.body;
+          let { status, message, data } = res.body;
           // Verify that the response status, message, and data are correct
           expect(status).to.equal(200);
           expect(message).to.equal('Users retrieved successfully');
@@ -358,7 +358,7 @@ describe('User Tests', () => {
         .set('Authorization', 'Bearer invalidtoken')
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message } = res.body;
+          let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(401);
           expect(message).to.equal('Invalid token');
@@ -372,7 +372,7 @@ describe('User Tests', () => {
         .set('Authorization', `Bearer ${token}`)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message, data } = res.body;
+          let { status, message, data } = res.body;
           // Verify that the response status, message, and data are correct
           expect(status).to.equal(200);
           expect(message).to.equal('User profile retrieved successfully');
@@ -438,7 +438,7 @@ describe('User Tests', () => {
         .set('Authorization', 'Bearer invalidtoken')
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message } = res.body;
+          let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(401);
           expect(message).to.equal('Invalid token');
@@ -454,7 +454,7 @@ describe('User Tests', () => {
         .set('Authorization', `Bearer ${token}`)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message } = res.body;
+          let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(404);
           expect(message).to.equal('User not found');
@@ -470,7 +470,7 @@ describe('User Tests', () => {
         .set('Authorization', `Bearer ${token}`)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message, data } = res.body;
+          let { status, message, data } = res.body;
           // Verify that the response status, message, and data are correct
           expect(status).to.equal(200);
           expect(message).to.equal('User retrieved successfully');
@@ -545,7 +545,7 @@ describe('User Tests', () => {
         .send(updatedUserData)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message } = res.body;
+          let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(400);
           expect(message).to.equal('Email address is required');
@@ -574,7 +574,7 @@ describe('User Tests', () => {
         .send(updatedUserData)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message } = res.body;
+          let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(403);
           expect(message).to.equal('Forbidden: You are not the owner of this user');
@@ -600,7 +600,7 @@ describe('User Tests', () => {
         .send(updatedUserData)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message } = res.body;
+          let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(400);
           expect(message).to.equal('Phone number is not valid');
@@ -626,7 +626,7 @@ describe('User Tests', () => {
         .send(updatedUserData)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message } = res.body;
+          let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(404);
           expect(message).to.equal('User not found');
@@ -651,7 +651,7 @@ describe('User Tests', () => {
         .send(updatedUserData)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message } = res.body;
+          let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(401);
           expect(message).to.equal('Unauthorized: Missing or invalid token');
@@ -677,7 +677,7 @@ describe('User Tests', () => {
         .send(updatedUserData)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message, data } = res.body;
+          let { status, message, data } = res.body;
           // Verify that the response status, message, and data are correct
           expect(status).to.equal(200);
           expect(message).to.equal('User updated successfully');
@@ -743,7 +743,7 @@ describe('User Tests', () => {
         .set('Authorization', `Bearer ${token}`)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message } = res.body;
+          let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(404);
           expect(message).to.equal('User not found');
@@ -758,7 +758,7 @@ describe('User Tests', () => {
         .delete(`/api/user/${userId}`)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message } = res.body;
+          let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(401);
           expect(message).to.equal('Unauthorized: Missing or invalid token');
@@ -777,7 +777,7 @@ describe('User Tests', () => {
         .set('Authorization', `Bearer ${differentUserToken}`)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message } = res.body;
+          let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(403);
           expect(message).to.equal('Forbidden: You are not the owner of this user');
@@ -793,7 +793,7 @@ describe('User Tests', () => {
         .set('Authorization', `Bearer ${token}`)
         .end((err, res) => {
           res.should.be.an('object');
-          const { status, message } = res.body;
+          let { status, message } = res.body;
           // Verify that the response status and message are correct
           expect(status).to.equal(200);
           expect(message).to.equal('User deleted successfully');
