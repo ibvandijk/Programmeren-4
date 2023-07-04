@@ -62,7 +62,7 @@ describe('User Tests', () => {
           res.should.be.an('object');
           let { status, message } = res.body;
           expect(status).to.equal(400);
-          expect(message).to.equal('Missing field: emailAddress');
+          expect(message).to.equal('Missing field: emailAdress');
           done();
         });
     });
@@ -86,7 +86,7 @@ describe('User Tests', () => {
           let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(400);
-          expect(message).to.equal('Invalid email address');
+          expect(message).to.equal('emailAdress is not valid');
           done();
         });
     });
@@ -110,7 +110,7 @@ describe('User Tests', () => {
           let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(400);
-          expect(message).to.equal('Invalid password');
+          expect(message).to.equal('password is not valid');
           done();
         });
     });
@@ -134,7 +134,7 @@ describe('User Tests', () => {
           let { status, message } = res.body;
           // Verify that the response status and error message are correct
           expect(status).to.equal(403);
-          expect(message).to.equal('User already exists');
+          expect(message).to.equal(`The email address: ${userData.emailAdress} has already been taken!`);
           done();
         });
     });
@@ -526,7 +526,7 @@ describe('User Tests', () => {
       });
     });
 
-    it('TC-205-1 Verplicht veld "emailAddress" ontbreekt', (done) => {
+    it('TC-205-1 Verplicht veld "emailAdress" ontbreekt', (done) => {
       const userId = 1;
       const updatedUserData = {
         firstName: 'John',
