@@ -417,7 +417,7 @@ const mealController = {
                         conn.release();
                         return next({
                             status: 403,
-                            message: 'You can only delete meals that you own.'
+                            message: 'Unauthorized: You are not allowed to update this meal.'
                         });
                     }
     
@@ -439,15 +439,13 @@ const mealController = {
                                 // No meal found with the provided mealId
                                 return next({
                                     status: 404,
-                                    message: `Meal with ID ${mealId} not found.`
+                                    message: `Meal with ID: ${mealId} not found!`
                                 });
                             }
     
                             res.status(200).json({
                                 status: 200,
-                                result: {
-                                    message: `Meal with ID ${mealId} successfully deleted.`,
-                                },
+                                message: 'Meal with ID ${mealId} successfully deleted.'
                             });
                         }
                     );
