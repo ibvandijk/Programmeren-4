@@ -407,7 +407,7 @@ const mealController = {
                         conn.release();
                         return next({
                             status: 404,
-                            message: `Meal with ID ${mealId} not found.`
+                            message: `Meal with ID: ${mealId} not found!`
                         });
                     }
     
@@ -445,7 +445,7 @@ const mealController = {
     
                             res.status(200).json({
                                 status: 200,
-                                message: 'Meal with ID ${mealId} successfully deleted.'
+                                message: 'Meal successfully deleted.'
                             });
                         }
                     );
