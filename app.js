@@ -7,6 +7,7 @@ const port = process.env.PORT || 3000;
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
 
+logger.debug("this is the request that came in: ", req);
 
 //Log all requests
 app.all('*', (req, res, next) => {
